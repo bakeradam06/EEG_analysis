@@ -253,9 +253,6 @@ for y = 1:length(excelFileNames)
     %% compile some stuff together
     % combine novibs segments ( prep and exe) together, then do same for vib segments (prep and exe)
 
-    apbNoVibAll = horzcat(cmcBeta)
-
-
     %% start combining together Pre Post FU, then append exclusions
     
     % Preparation phase (-2 to 0 before pinch cue)
