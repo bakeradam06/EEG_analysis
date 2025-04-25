@@ -250,43 +250,161 @@ for y = 1:length(excelFileNames)
         preTrialsAvailableV, postTrialsAvailableV, fuTrialsAvailableV, ...
         postIdxNV, postIdxV, pairsCmcChar, y);
 
-    %% compile some stuff together
-    % combine novibs segments ( prep and exe) together, then do same for vib segments (prep and exe)
-
     %% start combining together Pre Post FU, then append exclusions
     
-    % Preparation phase (-2 to 0 before pinch cue)
-    cmcBetaPrepNV_APB = vertcat(cmcBetaPreNegTwoToZero_APB,cmcBetaPostNegTwoToZero_APB,cmcBetaFUNegTwoToZero_APB);
-    cmcBetaPrepNV_FDI = vertcat(cmcBetaPreNegTwoToZero_FDI,cmcBetaPostNegTwoToZero_FDI,cmcBetaFUNegTwoToZero_FDI);
-    cmcBetaPrepNV_FDS = vertcat(cmcBetaPreNegTwoToZero_FDS,cmcBetaPostNegTwoToZero_FDS,cmcBetaFUNegTwoToZero_FDS);
-    cmcBetaPrepNV_EDC = vertcat(cmcBetaPreNegTwoToZero_EDC,cmcBetaPostNegTwoToZero_EDC,cmcBetaFUNegTwoToZero_EDC);
 
-    % Execution phase (0 to 2 s after pinch cue)
-    cmcBetaExeNV_APB = vertcat(cmcBetaPreZeroToTwo_APB,cmcBetaPostZeroToTwo_APB,cmcBetaFUZeroToTwo_APB);
-    cmcBetaExeNV_FDI = vertcat(cmcBetaPreZeroToTwo_FDI,cmcBetaPostZeroToTwo_FDI,cmcBetaFUZeroToTwo_FDI);
-    cmcBetaExeNV_FDS = vertcat(cmcBetaPreZeroToTwo_FDS,cmcBetaPostZeroToTwo_FDS,cmcBetaFUZeroToTwo_FDS);
-    cmcBetaExeNV_EDC = vertcat(cmcBetaPreZeroToTwo_EDC,cmcBetaPostZeroToTwo_EDC,cmcBetaFUZeroToTwo_EDC);
-
-    % add exclusions - Prep
-    cmcBetaPrepNV_APB = horzcat(cmcBetaPrepNV_APB,exclusion2NVcmc);
-    cmcBetaPrepNV_FDI = horzcat(cmcBetaPrepNV_FDI,exclusion2NVcmc);
-    cmcBetaPrepNV_FDS = horzcat(cmcBetaPrepNV_FDS,exclusion2NVcmc);
-    cmcBetaPrepNV_EDC = horzcat(cmcBetaPrepNV_EDC,exclusion2NVcmc);
+    %% Beta
+        % -- NoVib --
+        % Preparation phase (-2 to 0 before pinch cue)
+        cmcBetaPrepNV_APB = vertcat(cmcBetaPreNegTwoToZero_APB,cmcBetaPostNegTwoToZero_APB,cmcBetaFUNegTwoToZero_APB);
+        cmcBetaPrepNV_FDI = vertcat(cmcBetaPreNegTwoToZero_FDI,cmcBetaPostNegTwoToZero_FDI,cmcBetaFUNegTwoToZero_FDI);
+        cmcBetaPrepNV_FDS = vertcat(cmcBetaPreNegTwoToZero_FDS,cmcBetaPostNegTwoToZero_FDS,cmcBetaFUNegTwoToZero_FDS);
+        cmcBetaPrepNV_EDC = vertcat(cmcBetaPreNegTwoToZero_EDC,cmcBetaPostNegTwoToZero_EDC,cmcBetaFUNegTwoToZero_EDC);
     
-    % add exclusions - Exe
-    cmcBetaExeNV_APB = horzcat(cmcBetaExeNV_APB,exclusion2NVcmc);
-    cmcBetaExeNV_FDI = horzcat(cmcBetaExeNV_FDI,exclusion2NVcmc);
-    cmcBetaExeNV_FDS = horzcat(cmcBetaExeNV_FDS,exclusion2NVcmc);
-    cmcBetaExeNV_EDC = horzcat(cmcBetaExeNV_EDC,exclusion2NVcmc);
+        % Execution phase (0 to 2 s after pinch cue)
+        cmcBetaExeNV_APB = vertcat(cmcBetaPreZeroToTwo_APB,cmcBetaPostZeroToTwo_APB,cmcBetaFUZeroToTwo_APB);
+        cmcBetaExeNV_FDI = vertcat(cmcBetaPreZeroToTwo_FDI,cmcBetaPostZeroToTwo_FDI,cmcBetaFUZeroToTwo_FDI);
+        cmcBetaExeNV_FDS = vertcat(cmcBetaPreZeroToTwo_FDS,cmcBetaPostZeroToTwo_FDS,cmcBetaFUZeroToTwo_FDS);
+        cmcBetaExeNV_EDC = vertcat(cmcBetaPreZeroToTwo_EDC,cmcBetaPostZeroToTwo_EDC,cmcBetaFUZeroToTwo_EDC);
+    
+        % add exclusions - Prep
+        cmcBetaPrepNV_APB = horzcat(cmcBetaPrepNV_APB,exclusion2NVcmc);
+        cmcBetaPrepNV_FDI = horzcat(cmcBetaPrepNV_FDI,exclusion2NVcmc);
+        cmcBetaPrepNV_FDS = horzcat(cmcBetaPrepNV_FDS,exclusion2NVcmc);
+        cmcBetaPrepNV_EDC = horzcat(cmcBetaPrepNV_EDC,exclusion2NVcmc);
+    
+        % add exclusions - Exe
+        cmcBetaExeNV_APB = horzcat(cmcBetaExeNV_APB,exclusion2NVcmc);
+        cmcBetaExeNV_FDI = horzcat(cmcBetaExeNV_FDI,exclusion2NVcmc);
+        cmcBetaExeNV_FDS = horzcat(cmcBetaExeNV_FDS,exclusion2NVcmc);
+        cmcBetaExeNV_EDC = horzcat(cmcBetaExeNV_EDC,exclusion2NVcmc);
+    
+        % -- Vib --
+    
+        % Preparation phase (-2 to 0 before pinch cue)
+        cmcBetaPrepV_APB = vertcat(cmcBetaPreVibNegTwoToZero_APB,cmcBetaPostVibNegTwoToZero_APB,cmcBetaFUVibNegTwoToZero_APB);
+        cmcBetaPrepV_FDI = vertcat(cmcBetaPreVibNegTwoToZero_FDI,cmcBetaPostVibNegTwoToZero_FDI,cmcBetaFUVibNegTwoToZero_FDI);
+        cmcBetaPrepV_FDS = vertcat(cmcBetaPreVibNegTwoToZero_FDS,cmcBetaPostVibNegTwoToZero_FDS,cmcBetaFUVibNegTwoToZero_FDS);
+        cmcBetaPrepV_EDC = vertcat(cmcBetaPreVibNegTwoToZero_EDC,cmcBetaPostVibNegTwoToZero_EDC,cmcBetaFUVibNegTwoToZero_EDC);
+    
+        % Execution phase (0 to 2 s after pinch cue)
+        cmcBetaExeV_APB = vertcat(cmcBetaPreVibZeroToTwo_APB,cmcBetaPostVibZeroToTwo_APB,cmcBetaFUVibZeroToTwo_APB);
+        cmcBetaExeV_FDI = vertcat(cmcBetaPreVibZeroToTwo_FDI,cmcBetaPostVibZeroToTwo_FDI,cmcBetaFUVibZeroToTwo_FDI);
+        cmcBetaExeV_FDS = vertcat(cmcBetaPreVibZeroToTwo_FDS,cmcBetaPostVibZeroToTwo_FDS,cmcBetaFUVibZeroToTwo_FDS);
+        cmcBetaExeV_EDC = vertcat(cmcBetaPreVibZeroToTwo_EDC,cmcBetaPostVibZeroToTwo_EDC,cmcBetaFUVibZeroToTwo_EDC);
+    
+        % add exclusions - Prep
+        cmcBetaPrepV_APB = horzcat(cmcBetaPrepV_APB,exclusion2Vcmc);
+        cmcBetaPrepV_FDI = horzcat(cmcBetaPrepV_FDI,exclusion2Vcmc);
+        cmcBetaPrepV_FDS = horzcat(cmcBetaPrepV_FDS,exclusion2Vcmc);
+        cmcBetaPrepV_EDC = horzcat(cmcBetaPrepV_EDC,exclusion2Vcmc);
+    
+        % add exclusions - Exe
+        cmcBetaExeV_APB = horzcat(cmcBetaExeV_APB,exclusion2Vcmc);
+        cmcBetaExeV_FDI = horzcat(cmcBetaExeV_FDI,exclusion2Vcmc);
+        cmcBetaExeV_FDS = horzcat(cmcBetaExeV_FDS,exclusion2Vcmc);
+        cmcBetaExeV_EDC = horzcat(cmcBetaExeV_EDC,exclusion2Vcmc);
+
+    %% Gamma - 
+        % -- NoVib --
+        % Preparation phase (-2 to 0 before pinch cue)
+        cmcGammaPrepNV_APB = vertcat(cmcGammaPreNegTwoToZero_APB,cmcGammaPostNegTwoToZero_APB,cmcGammaFUNegTwoToZero_APB);
+        cmcGammaPrepNV_FDI = vertcat(cmcGammaPreNegTwoToZero_FDI,cmcGammaPostNegTwoToZero_FDI,cmcGammaFUNegTwoToZero_FDI);
+        cmcGammaPrepNV_FDS = vertcat(cmcGammaPreNegTwoToZero_FDS,cmcGammaPostNegTwoToZero_FDS,cmcGammaFUNegTwoToZero_FDS);
+        cmcGammaPrepNV_EDC = vertcat(cmcGammaPreNegTwoToZero_EDC,cmcGammaPostNegTwoToZero_EDC,cmcGammaFUNegTwoToZero_EDC);
+    
+        % Execution phase (0 to 2 s after pinch cue)
+        cmcGammaExeNV_APB = vertcat(cmcGammaPreZeroToTwo_APB,cmcGammaPostZeroToTwo_APB,cmcGammaFUZeroToTwo_APB);
+        cmcGammaExeNV_FDI = vertcat(cmcGammaPreZeroToTwo_FDI,cmcGammaPostZeroToTwo_FDI,cmcGammaFUZeroToTwo_FDI);
+        cmcGammaExeNV_FDS = vertcat(cmcGammaPreZeroToTwo_FDS,cmcGammaPostZeroToTwo_FDS,cmcGammaFUZeroToTwo_FDS);
+        cmcGammaExeNV_EDC = vertcat(cmcGammaPreZeroToTwo_EDC,cmcGammaPostZeroToTwo_EDC,cmcGammaFUZeroToTwo_EDC);
+    
+        % add exclusions - Prep
+        cmcGammaPrepNV_APB = horzcat(cmcGammaPrepNV_APB,exclusion2NVcmc);
+        cmcGammaPrepNV_FDI = horzcat(cmcGammaPrepNV_FDI,exclusion2NVcmc);
+        cmcGammaPrepNV_FDS = horzcat(cmcGammaPrepNV_FDS,exclusion2NVcmc);
+        cmcGammaPrepNV_EDC = horzcat(cmcGammaPrepNV_EDC,exclusion2NVcmc);
+    
+        % add exclusions - Exe
+        cmcGammaExeNV_APB = horzcat(cmcGammaExeNV_APB,exclusion2NVcmc);
+        cmcGammaExeNV_FDI = horzcat(cmcGammaExeNV_FDI,exclusion2NVcmc);
+        cmcGammaExeNV_FDS = horzcat(cmcGammaExeNV_FDS,exclusion2NVcmc);
+        cmcGammaExeNV_EDC = horzcat(cmcGammaExeNV_EDC,exclusion2NVcmc);
+    
+        % -- Vib --
+    
+        % Preparation phase (-2 to 0 before pinch cue)
+        cmcGammaPrepV_APB = vertcat(cmcGammaPreVibNegTwoToZero_APB,cmcGammaPostVibNegTwoToZero_APB,cmcGammaFUVibNegTwoToZero_APB);
+        cmcGammaPrepV_FDI = vertcat(cmcGammaPreVibNegTwoToZero_FDI,cmcGammaPostVibNegTwoToZero_FDI,cmcGammaFUVibNegTwoToZero_FDI);
+        cmcGammaPrepV_FDS = vertcat(cmcGammaPreVibNegTwoToZero_FDS,cmcGammaPostVibNegTwoToZero_FDS,cmcGammaFUVibNegTwoToZero_FDS);
+        cmcGammaPrepV_EDC = vertcat(cmcGammaPreVibNegTwoToZero_EDC,cmcGammaPostVibNegTwoToZero_EDC,cmcGammaFUVibNegTwoToZero_EDC);
+    
+        % Execution phase (0 to 2 s after pinch cue)
+        cmcGammaExeV_APB = vertcat(cmcGammaPreVibZeroToTwo_APB,cmcGammaPostVibZeroToTwo_APB,cmcGammaFUVibZeroToTwo_APB);
+        cmcGammaExeV_FDI = vertcat(cmcGammaPreVibZeroToTwo_FDI,cmcGammaPostVibZeroToTwo_FDI,cmcGammaFUVibZeroToTwo_FDI);
+        cmcGammaExeV_FDS = vertcat(cmcGammaPreVibZeroToTwo_FDS,cmcGammaPostVibZeroToTwo_FDS,cmcGammaFUVibZeroToTwo_FDS);
+        cmcGammaExeV_EDC = vertcat(cmcGammaPreVibZeroToTwo_EDC,cmcGammaPostVibZeroToTwo_EDC,cmcGammaFUVibZeroToTwo_EDC);
+    
+        % add exclusions - Prep
+        cmcGammaPrepV_APB = horzcat(cmcGammaPrepV_APB,exclusion2Vcmc);
+        cmcGammaPrepV_FDI = horzcat(cmcGammaPrepV_FDI,exclusion2Vcmc);
+        cmcGammaPrepV_FDS = horzcat(cmcGammaPrepV_FDS,exclusion2Vcmc);
+        cmcGammaPrepV_EDC = horzcat(cmcGammaPrepV_EDC,exclusion2Vcmc);
+    
+        % add exclusions - Exe
+        cmcGammaExeV_APB = horzcat(cmcGammaExeV_APB,exclusion2Vcmc);
+        cmcGammaExeV_FDI = horzcat(cmcGammaExeV_FDI,exclusion2Vcmc);
+        cmcGammaExeV_FDS = horzcat(cmcGammaExeV_FDS,exclusion2Vcmc);
+        cmcGammaExeV_EDC = horzcat(cmcGammaExeV_EDC,exclusion2Vcmc);
 
     %% lets clear some vars
     clear cmcBetaFUNegTwoToZero_APB cmcBetaFUNegTwoToZero_EDC cmcBetaFUNegTwoToZero_FDI cmcBetaFUNegTwoToZero_FDS cmcBetaFUZeroToTwo_APB cmcBetaFUZeroToTwo_EDC...
         cmcBetaFUZeroToTwo_FDI cmcBetaFUZeroToTwo_FDS cmcBetaPostNegTwoToZero_APB cmcBetaPostNegTwoToZero_EDC cmcBetaPostNegTwoToZero_FDI cmcBetaPostNegTwoToZero_FDS ... 
         cmcBetaPostZeroToTwo_APB cmcBetaPostZeroToTwo_EDC cmcBetaPostZeroToTwo_FDI cmcBetaPostZeroToTwo_FDS cmcBetaPreNegTwoToZero_APB cmcBetaPreNegTwoToZero_EDC cmcBetaPreNegTwoToZero_FDI... 
         cmcBetaPreNegTwoToZero_FDS cmcBetaPreZeroToTwo_APB cmcBetaPreZeroToTwo_EDC cmcBetaPreZeroToTwo_FDI cmcBetaPreZeroToTwo_FDS exclusion2NVcmc allDataTNT ...
-        wolfData
+        wolfData exclusion2VcmcsheetsToRead cmcBetaFUVibNegTwoToZero_APB cmcBetaFUVibNegTwoToZero_EDC cmcBetaFUVibNegTwoToZero_FDI cmcBetaFUVibNegTwoToZero_FDS cmcBetaFUVibZeroToTwo_APB cmcBetaFUVibZeroToTwo_EDC cmcBetaFUVibZeroToTwo_FDI...
+        cmcBetaFUVibZeroToTwo_FDS cmcBetaPostVibNegTwoToZero_APB cmcBetaPostVibNegTwoToZero_EDC cmcBetaPostVibNegTwoToZero_FDI cmcBetaPostVibNegTwoToZero_FDS cmcBetaPostVibZeroToTwo_APB cmcBetaPostVibZeroToTwo_EDC cmcBetaPostVibZeroToTwo_FDI cmcBetaPostVibZeroToTwo_FDS ...
+        cmcBetaPreVibNegTwoToZero_APB cmcBetaPreVibNegTwoToZero_EDC cmcBetaPreVibNegTwoToZero_FDI cmcBetaPreVibNegTwoToZero_FDS cmcBetaPreVibZeroToTwo_APB cmcBetaPreVibZeroToTwo_EDC cmcBetaPreVibZeroToTwo_FDI cmcBetaPreVibZeroToTwo_FDS
+
+
+    clear cmcGammaFUNegTwoToZero_APB cmcGammaFUNegTwoToZero_EDC cmcGammaFUNegTwoToZero_FDI cmcGammaFUNegTwoToZero_FDS cmcGammaFUVibNegTwoToZero_APB cmcGammaFUVibNegTwoToZero_EDC cmcGammaFUVibNegTwoToZero_FDI cmcGammaFUVibNegTwoToZero_FDS ...
+        cmcGammaFUVibZeroToTwo_APB cmcGammaFUVibZeroToTwo_EDC cmcGammaFUVibZeroToTwo_FDI cmcGammaFUVibZeroToTwo_FDS cmcGammaFUZeroToTwo_APB cmcGammaFUZeroToTwo_EDC cmcGammaFUZeroToTwo_FDI cmcGammaFUZeroToTwo_FDS cmcGammaPostNegTwoToZero_APB ...
+        cmcGammaPostNegTwoToZero_EDC cmcGammaPostNegTwoToZero_FDI cmcGammaPostNegTwoToZero_FDS cmcGammaPostVibNegTwoToZero_APB cmcGammaPostVibNegTwoToZero_EDC cmcGammaPostVibNegTwoToZero_FDI cmcGammaPostVibNegTwoToZero_FDS cmcGammaPostVibNegTwoToZero_FDS ...
+        cmcGammaPostVibNegTwoToZero_FDS cmcGammaPostVibZeroToTwo_APB cmcGammaPostVibZeroToTwo_EDC cmcGammaPostVibZeroToTwo_FDI cmcGammaPostVibZeroToTwo_FDS cmcGammaPostZeroToTwo_APB cmcGammaPostZeroToTwo_EDC cmcGammaPostZeroToTwo_FDI cmcGammaPostZeroToTwo_FDS ...
+        cmcGammaPostZeroToTwo_FDS cmcGammaPreNegTwoToZero_APB cmcGammaPreNegTwoToZero_EDC cmcGammaPreNegTwoToZero_FDI cmcGammaPreNegTwoToZero_FDS cmcGammaPreVibNegTwoToZero_APB cmcGammaPreVibNegTwoToZero_EDC cmcGammaPreVibNegTwoToZero_FDI cmcGammaPreVibNegTwoToZero_FDS ...
+        cmcGammaPreVibZeroToTwo_APB cmcGammaPreVibZeroToTwo_EDC cmcGammaPreVibZeroToTwo_FDI cmcGammaPreVibZeroToTwo_FDS cmcGammaPreZeroToTwo_APB cmcGammaPreZeroToTwo_EDC cmcGammaPreZeroToTwo_FDI cmcGammaPreZeroToTwo_FDS 
+
+    clear dataCMCBetaNV_APB dataCMCBetaNV_EDC dataCMCBetaNV_FDI dataCMCBetaNV_FDS dataCMCBetaV_APB dataCMCBetaV_EDC dataCMCBetaV_FDI dataCMCBetaV_FDS dataCMCGammaNV_APB dataCMCGammaNV_EDC dataCMCGammaNV_FDI dataCMCGammaNV_FDS dataCMCGammaV_APB dataCMCGammaV_EDC dataCMCGammaV_FDI dataCMCGammaV_FDS
+    
+    %% TODO: exclude data with 0 in exclusion2 "pinchIncludeTrial"
+
+    tableDir = {
+        cmcBetaExeNV_APB,cmcBetaExeNV_EDC,cmcBetaExeNV_FDI,cmcBetaExeNV_FDS,cmcBetaExeV_APB,cmcBetaExeV_EDC,cmcBetaExeV_FDI,...
+        cmcBetaExeV_FDS,cmcBetaPrepNV_APB,cmcBetaPrepNV_EDC,cmcBetaPrepNV_FDI,cmcBetaPrepNV_FDS,cmcBetaPrepV_APB,cmcBetaPrepV_EDC,cmcBetaPrepV_FDI,...
+        cmcBetaPrepV_FDS,cmcGammaExeNV_APB,cmcGammaExeNV_EDC,cmcGammaExeNV_FDI,cmcGammaExeNV_FDS,cmcGammaExeV_APB,cmcGammaExeV_EDC,cmcGammaExeV_FDI,...
+        cmcGammaExeV_FDS,cmcGammaPrepNV_APB,cmcGammaPrepNV_EDC,cmcGammaPrepNV_FDI,cmcGammaPrepNV_FDS,cmcGammaPrepV_APB,cmcGammaPrepV_EDC,...
+        cmcGammaPrepV_FDI,cmcGammaPrepV_FDS
+        };
+
+    for i = 1:numel(tableDir)
+        currentTbl = tableDir{i};
+        % only filter those that actually have the column
+        if ismember('pinchIncludeTrial', currentTbl.Properties.VariableNames)
+            currentTbl = currentTbl(currentTbl.pinchIncludeTrial == 1, :);
+        end
+        tableDir{i} = currentTbl;
+    end
+
+
 
 
 
     
+
+
+
+
+
+
+
 end
