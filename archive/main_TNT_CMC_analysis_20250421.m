@@ -129,14 +129,14 @@ for y = 1:length(excelFileNames)
     fuTrialsAvailableNV   = size(dataCMCBetaNV_APB{y}, 1) - fuIdxNV + 1;
 
     %% now do the same for Vib
-    % filenameColV = dataCMCBetaV_APB{y}.Var1;
-    % % Find indices of "Post" and "FU" within Vib filenames
-    % postIdxV = find(contains(filenameColV, 'Post', 'IgnoreCase', true), 1);
-    % fuIdxV   = find(contains(filenameColV, 'FU', 'IgnoreCase', true), 1);
+    filenameColV = dataCMCBetaV_APB{y}.Var1;
+    % Find indices of "Post" and "FU" within Vib filenames
+    postIdxV = find(contains(filenameColV, 'Post', 'IgnoreCase', true), 1);
+    fuIdxV   = find(contains(filenameColV, 'FU', 'IgnoreCase', true), 1);
 
-    % preTrialsAvailableV  = postIdxV - 4; % Adjust for first 3 non-trial rows
-    % postTrialsAvailableV = fuIdxV - postIdxV;
-    % fuTrialsAvailableV   = size(dataCCCAlphaV{y}, 1) - fuIdxV + 1;
+    preTrialsAvailableV  = postIdxV - 4; % Adjust for first 3 non-trial rows
+    postTrialsAvailableV = fuIdxV - postIdxV;
+    fuTrialsAvailableV   = size(dataCCCAlphaV{y}, 1) - fuIdxV + 1;
    
     %% exclusions - NV CMC 
     exclusion2NVcmc = dataCMCBetaNV_APB{y}(4:end,5:6);

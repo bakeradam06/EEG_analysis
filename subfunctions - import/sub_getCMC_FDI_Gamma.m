@@ -9,7 +9,7 @@ function [cmcGammaPreNegTwoToZero_FDI, cmcGammaPreZeroToTwo_FDI, ...
     preTrialsAvailableNV, postTrialsAvailableNV, fuTrialsAvailableNV, ...
     preTrialsAvailableV, postTrialsAvailableV, fuTrialsAvailableV, ...
     postIdxNV, postIdxV, pairsCmcChar, y)
-%% --- NoVib Condition ---
+
 % Pre NoVib
 cmcGammaPreNegTwoToZero_FDI = dataCMCGammaNV_FDI{y}(4:3+preTrialsAvailableNV, 36:43);
 cmcGammaPreNegTwoToZero_FDI.Properties.VariableNames = pairsCmcChar;
@@ -28,7 +28,7 @@ cmcGammaFUNegTwoToZero_FDI = dataCMCGammaNV_FDI{y}(lastRowNV_FDI_Gamma-fuTrialsA
 cmcGammaFUNegTwoToZero_FDI.Properties.VariableNames = pairsCmcChar;
 cmcGammaFUZeroToTwo_FDI = dataCMCGammaNV_FDI{y}(lastRowNV_FDI_Gamma-fuTrialsAvailableNV+1:lastRowNV_FDI_Gamma, 54:61);
 cmcGammaFUZeroToTwo_FDI.Properties.VariableNames = pairsCmcChar;
-%% --- Vib Condition ---
+
 % Pre Vib
 cmcGammaPreVibNegTwoToZero_FDI = dataCMCGammaV_FDI{y}(4:3+preTrialsAvailableV, 36:43);
 cmcGammaPreVibNegTwoToZero_FDI.Properties.VariableNames = pairsCmcChar;
