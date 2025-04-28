@@ -76,11 +76,11 @@ for scabbers=1:length(wolfData.timePoint)
         wolfData.timePoint{scabbers} = "FU";
     end
 end
-timeLabels = {'Pre','Post','Follow up'};
-timeLabels2 = ["Baseline","Post","FU"];
+timeLabelsCell = {'Pre','Post','Follow up'};
+timeLabelsStr = ["Baseline","Post","FU"];
 wolfData.timePoint = cellstr(wolfData.timePoint);
 clear Pre Post FU timePoint wolfTime subjID currentID sirius scabbers
-
+allCMC = table(); % start big table for later
 
 %% CMC import
 %% start loop to compile data
@@ -128,7 +128,7 @@ for y = 1:length(excelFileNames)
     postTrialsAvailableNV = fuIdxNV - postIdxNV;
     fuTrialsAvailableNV   = size(dataCMCBetaNV_APB{y}, 1) - fuIdxNV + 1;
 
-    %% now do the same for Vib
+    %% now same for Vib
     filenameColV = dataCMCBetaV_APB{y}.Var1;
     % Find indices of "Post" and "FU" within Vib filenames
     postIdxV = find(contains(filenameColV, 'Post', 'IgnoreCase', true), 1);
@@ -252,8 +252,7 @@ for y = 1:length(excelFileNames)
 
     %% start combining together Pre Post FU, then append exclusions
     
-
-    %% Beta
+    % Beta
         % -- NoVib --
         % Preparation phase (-2 to 0 before pinch cue)
         cmcBetaPrepNV_APB = vertcat(cmcBetaPreNegTwoToZero_APB,cmcBetaPostNegTwoToZero_APB,cmcBetaFUNegTwoToZero_APB);
@@ -305,7 +304,7 @@ for y = 1:length(excelFileNames)
         cmcBetaExeV_FDS = horzcat(cmcBetaExeV_FDS,exclusion2Vcmc);
         cmcBetaExeV_EDC = horzcat(cmcBetaExeV_EDC,exclusion2Vcmc);
 
-    %% Gamma - 
+    % Gamma - 
         % -- NoVib --
         % Preparation phase (-2 to 0 before pinch cue)
         cmcGammaPrepNV_APB = vertcat(cmcGammaPreNegTwoToZero_APB,cmcGammaPostNegTwoToZero_APB,cmcGammaFUNegTwoToZero_APB);
@@ -366,7 +365,6 @@ for y = 1:length(excelFileNames)
         cmcBetaFUVibZeroToTwo_FDS cmcBetaPostVibNegTwoToZero_APB cmcBetaPostVibNegTwoToZero_EDC cmcBetaPostVibNegTwoToZero_FDI cmcBetaPostVibNegTwoToZero_FDS cmcBetaPostVibZeroToTwo_APB cmcBetaPostVibZeroToTwo_EDC cmcBetaPostVibZeroToTwo_FDI cmcBetaPostVibZeroToTwo_FDS ...
         cmcBetaPreVibNegTwoToZero_APB cmcBetaPreVibNegTwoToZero_EDC cmcBetaPreVibNegTwoToZero_FDI cmcBetaPreVibNegTwoToZero_FDS cmcBetaPreVibZeroToTwo_APB cmcBetaPreVibZeroToTwo_EDC cmcBetaPreVibZeroToTwo_FDI cmcBetaPreVibZeroToTwo_FDS
 
-
     clear cmcGammaFUNegTwoToZero_APB cmcGammaFUNegTwoToZero_EDC cmcGammaFUNegTwoToZero_FDI cmcGammaFUNegTwoToZero_FDS cmcGammaFUVibNegTwoToZero_APB cmcGammaFUVibNegTwoToZero_EDC cmcGammaFUVibNegTwoToZero_FDI cmcGammaFUVibNegTwoToZero_FDS ...
         cmcGammaFUVibZeroToTwo_APB cmcGammaFUVibZeroToTwo_EDC cmcGammaFUVibZeroToTwo_FDI cmcGammaFUVibZeroToTwo_FDS cmcGammaFUZeroToTwo_APB cmcGammaFUZeroToTwo_EDC cmcGammaFUZeroToTwo_FDI cmcGammaFUZeroToTwo_FDS cmcGammaPostNegTwoToZero_APB ...
         cmcGammaPostNegTwoToZero_EDC cmcGammaPostNegTwoToZero_FDI cmcGammaPostNegTwoToZero_FDS cmcGammaPostVibNegTwoToZero_APB cmcGammaPostVibNegTwoToZero_EDC cmcGammaPostVibNegTwoToZero_FDI cmcGammaPostVibNegTwoToZero_FDS cmcGammaPostVibNegTwoToZero_FDS ...
@@ -376,7 +374,7 @@ for y = 1:length(excelFileNames)
 
     clear dataCMCBetaNV_APB dataCMCBetaNV_EDC dataCMCBetaNV_FDI dataCMCBetaNV_FDS dataCMCBetaV_APB dataCMCBetaV_EDC dataCMCBetaV_FDI dataCMCBetaV_FDS dataCMCGammaNV_APB dataCMCGammaNV_EDC dataCMCGammaNV_FDI dataCMCGammaNV_FDS dataCMCGammaV_APB dataCMCGammaV_EDC dataCMCGammaV_FDI dataCMCGammaV_FDS
     
-    %% TODO: exclude data with 0 in exclusion2 "pinchIncludeTrial"
+    %% exclude trials = 0 in exclusion2 "pinchIncludeTrial" column
 
     tableDir = {
         cmcBetaExeNV_APB,cmcBetaExeNV_EDC,cmcBetaExeNV_FDI,cmcBetaExeNV_FDS,cmcBetaExeV_APB,cmcBetaExeV_EDC,cmcBetaExeV_FDI,...
@@ -385,26 +383,107 @@ for y = 1:length(excelFileNames)
         cmcGammaExeV_FDS,cmcGammaPrepNV_APB,cmcGammaPrepNV_EDC,cmcGammaPrepNV_FDI,cmcGammaPrepNV_FDS,cmcGammaPrepV_APB,cmcGammaPrepV_EDC,...
         cmcGammaPrepV_FDI,cmcGammaPrepV_FDS
         };
+    tableNames = { ...
+        'cmcBetaExeNV_APB','cmcBetaExeNV_EDC','cmcBetaExeNV_FDI','cmcBetaExeNV_FDS', ...
+        'cmcBetaExeV_APB','cmcBetaExeV_EDC','cmcBetaExeV_FDI','cmcBetaExeV_FDS', ...
+        'cmcBetaPrepNV_APB','cmcBetaPrepNV_EDC','cmcBetaPrepNV_FDI','cmcBetaPrepNV_FDS', ...
+        'cmcBetaPrepV_APB','cmcBetaPrepV_EDC','cmcBetaPrepV_FDI','cmcBetaPrepV_FDS', ...
+        'cmcGammaExeNV_APB','cmcGammaExeNV_EDC','cmcGammaExeNV_FDI','cmcGammaExeNV_FDS', ...
+        'cmcGammaExeV_APB','cmcGammaExeV_EDC','cmcGammaExeV_FDI','cmcGammaExeV_FDS', ...
+        'cmcGammaPrepNV_APB','cmcGammaPrepNV_EDC','cmcGammaPrepNV_FDI','cmcGammaPrepNV_FDS', ...
+        'cmcGammaPrepV_APB','cmcGammaPrepV_EDC','cmcGammaPrepV_FDI','cmcGammaPrepV_FDS'  ...
+        };
 
-    for i = 1:numel(tableDir)
-        currentTbl = tableDir{i};
-        % only filter those that actually have the column
+    for i = 1:numel(tableDir) % for every entry into tableDir
+        currentTbl = tableDir{i}; % pull out i-th table
+        
+        % determining # trials for each time point (since table includes pre post & fu)
+        currentName = tableNames{i};
+
+        if contains(currentName,"NV") % if it's NoVib
+            nPre  = preTrialsAvailableNV;
+            nPost = postTrialsAvailableNV;
+            nFU   = fuTrialsAvailableNV;
+        else  % if its Vib
+            nPre  = preTrialsAvailableV;
+            nPost = postTrialsAvailableV;
+            nFU   = fuTrialsAvailableV;
+        end
+
+        nHeight = height(currentTbl); % get height of currentTbl
+        timePoint = repmat("FU",nHeight,1); % make new var corrsponding to height of currentTbl containing all "FU" in rows
+        timePoint(1:nPre) = "Pre"; % using # pre trials, change "FU" --> "Pre"
+        timePoint(nPre+1:nPre+nPost) = "Post"; % using # Post trials, change "FU" --> "Pre"
+        % since "FU" was entered by default, don't need to do anything else to change naming like above
+        currentTbl.timePoint = timePoint; % add new column to currentTbl with approrpriate timePoint label 
+
+        % these above actions will help denote what trial is what timePoint after trial exclusion, which is about to happen below
+        
+        % check if currentTbl has column 'pinchIncludeTrial'
         if ismember('pinchIncludeTrial', currentTbl.Properties.VariableNames)
+            % if yes, exclude the rows that have 0 in pinchIncludeTrial
+            % (should always be yes)
             currentTbl = currentTbl(currentTbl.pinchIncludeTrial == 1, :);
         end
-        tableDir{i} = currentTbl;
+        
+        % assign name of currentTbl to name of tableDir{i} wkspce variable
+        assignin('base', tableNames{i}, currentTbl);
+    
+        % END PRODUCT FROM LOOP: now we have excluded bad trials, and have a list of
+        % trials that occurred according to Pre, Post, and FU. 
+    end
+
+    %% clear some more vars
+    clear currentName filenameColV filenameColNV filenameColVfuIdxNV fuIdxV fuTrialsAvailableNV fuTrialsAvailableV i lastRowNV_APB lastRowNV_APB_Gamma lastRowNV_EDC lastRowNV_EDC_Gamma ...
+        lastRowNV_FDI lastRowNV_FDI_Gamma lastRowNV_FDS lastRowNV_FDS_Gamma lastRowV_APB lastRowV_APB_Gamma lastRowV_EDC lastRowV_EDC_Gamma lastRowV_FDI lastRowV_FDI_Gamma lastRowV_FDS lastRowV_FDS_Gamma ...
+        nFU nHeight nPost nPre postIdxNV postIdxV postTrialsAvailableNV postTrialsAvailableV preTrialsAvailableNV preTrialsAvailableV sheetsToRead y currentTbl timePoint fuIdxNV exclusion2Vcmc 
+
+    %% combine all 32 CMC tables into one big one for sanity's sake
+
+    for i=1:numel(tableNames) % for all values in tableNames
+        currentName = tableNames{i}; % get current table name
+        currentTable = eval(currentName); % get the currentTbl from list
+
+        % parse naming
+        parts = split(currentName,"_"); % split into parts around _'s
+        muscle = parts{2}; % denote muscle (e.g., APB, FDI, FDS, EDC)
+        main = parts{1}(4:end); % main part of the name (excluding "cmc" at start)
+
+        if startsWith(main,"Beta") % if var starts iwth beta
+            band= "Beta"; % it is beta band
+        else
+            band="Gamma"; % otherwise gamma
+        end
+
+        if contains(main,"Prep") % similar thing with prep and exe
+            phase = "Prep";
+        else
+            phase = "Exe";
+        end
+        
+        if contains(main,"NV") % similar thing with NV and V
+            cond = "NoVib";
+        else
+            cond = "Vib";
+        end
+        
+        % make cols according to details of table
+        currentTable.Band = repmat(band,height(currentTable),1); % freq band
+        currentTable.Phase = repmat(phase,height(currentTable),1); % prep or exe
+        currentTable.Condition = repmat(cond,height(currentTable),1); % noVib or Vib
+        currentTable.Muscle = repmat(muscle,height(currentTable),1); % muscle 
+        currentTable.Subject   = repmat(currentPt, height(currentTable), 1); % subject #
+
+        allCMC = [allCMC; currentTable]; % add to bigCMC table as we go
     end
 
 
 
-
-
+    
     
 
 
 
 
-
-
-
+%%
 end
