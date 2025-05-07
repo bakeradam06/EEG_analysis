@@ -475,12 +475,89 @@ for y = 1:length(excelFileNames)
         currentTable.Subject   = repmat(currentPt, height(currentTable), 1); % subject #
 
         allCMC = [allCMC; currentTable]; % add to bigCMC table as we go
+        allCMC.Muscle = string(allCMC.Muscle);
     end
 
-
-
     
-    
+%% clear more vars
+clear cmcBetaExeNV_APB cmcBetaExeNV_EDC cmcBetaExeNV_FDI cmcBetaExeNV_FDS cmcBetaExeV_APB cmcBetaExeV_EDC cmcBetaExeV_FDI cmcBetaExeV_FDS cmcBetaPrepNV_APB cmcBetaPrepNV_EDC cmcBetaPrepNV_FDI cmcBetaPrepNV_FDS cmcBetaPrepV_APB cmcBetaPrepV_EDC cmcBetaPrepV_FDI cmcBetaPrepV_FDS cmcGammaExeNV_APB cmcGammaExeNV_EDC cmcGammaExeNV_FDI cmcGammaExeNV_FDS cmcGammaExeV_APB cmcGammaExeV_EDC cmcGammaExeV_FDI cmcGammaExeV_FDS cmcGammaPrepNV_APB cmcGammaPrepNV_EDC cmcGammaPrepNV_FDI cmcGammaPrepNV_FDS cmcGammaPrepV_APB cmcGammaPrepV_EDC cmcGammaPrepV_FDI cmcGammaPrepV_FDS ...
+    cond currentTable parts tableDir tableNames currentName currentExcelFile currentPt main i muscle band phase basePath
+
+%% start plotting
+
+% get subject list from allCMC
+subjects = unique(allCMC.Subject);
+muscles = unique(allCMC.Muscle);
+bands    = ["Beta","Gamma"];
+phases   = ["Prep","Exe"];
+timeOrder = {'Pre','Post','FU'};
+conds = ["NoVib","Vib"];
+nPairs   = numel(pairsCmcChar);
+outDir = 'CMC_plots';
+
+if ~isfolder(outDir)
+    mkdir(outDir);
+end
+
+for iSubj=1:numel(subjects) % for all subjects
+    currentSubj = subjects(iSubj); % list curr subj
+    for iMus = 1:numel(muscles) % for all muscles
+        currentMus = muscles(iMus); % get currMuscle
+
+        % New figure for subject
+        fig = figure('Visible','off','Name', sprintf('%s – %s', currentSubj, currentMus), ...
+            'NumberTitle','off');
+        sgtitle(sprintf('Subject %s — %s CMC over Time', currentSubj, currentMus));
+
+        for iBand = 1:2 % for each freq band
+            for iCond = 1:2 % for each vib/noVib cond
+                for iPhase = 1:2 % for each prep exe phase
+
+                    %figure out which subplot i'm on
+                    idx = (iBand-1)*4 + (iCond-1)*2 + iPhase;
+                    ax  = subplot(2,4,idx);
+                    hold(ax,'on');
+
+                    selection = allCMC.Subject == currentSubj & ... % get currSubj
+                        allCMC.Muscle        == currentMus   & ... % get currMuscle
+                        allCMC.Band          == bands(iBand) & ... % get currBand
+                        allCMC.Condition     == conds(iCond) & ... % get currVib/NoVib
+                        allCMC.Phase         == phases(iPhase); % get currPhase
+                    T = allCMC(selection,:); % use the above to generate a temp table from allCMC - "selection"
+
+                    if isempty(T) % if tempTable T is empty, do something
+                        title(ax, sprintf('%s / %s — no data',bands(iBand),phases(iPhase)));
+                        continue;
+                    end
+
+                    % group & average
+                    tpCat = categorical(T.timePoint, timeOrder, timeOrder); % create categories of Pre Post FU, label them 1=Pre, 2=Post, 3=FU
+                    [G, TP] = findgroups(tpCat); % G is array of 1, 2, 3 according to tpCat, TP is "Pre", "Post", "FU"  
+                    M = splitapply(@(x) mean(x,1,'omitnan'), T{:,pairsCmcChar}, G); % 
+
+                    % plot each pair
+                    for k = 1:nPairs
+                        plot(ax, TP, M(:,k), '-o', 'DisplayName', pairsCmcChar{k});
+                    end
+
+                    title(ax, sprintf('%s | %s | %s', bands(iBand), conds(iCond), phases(iPhase)));
+                    xlabel(ax,'TimePoint');
+                    ylabel(ax,'Mean CMC');
+                    if iBand==1 && iPhase==1 && iCond == 1
+                        legend(ax,'Location','bestoutside');
+                    end
+                    hold(ax,'off');
+                end
+            end
+        end
+    end
+    % pause or drawnow if you want to inspect each before moving on
+    drawnow;
+
+    fname = sprintf('%s_%s_CMC.png', currentSubj, currentMus);
+    saveas(fig, fullfile(outDir, fname));
+    close(fig);
+end
 
 
 
