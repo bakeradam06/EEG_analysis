@@ -46,40 +46,46 @@ groupAllocation.Properties.VariableNames(1:2) = ["subject","group"];
 % join will automatically replicate each subject’s “group” for all of their sessions
 clinicalData = innerjoin(wolfData, groupAllocation, 'Keys', 'subject');
 
-% check to make sure groupAllcoation is correct compared to original import
-u = unique(clinicalData(:,{'subject','group'}),'rows','stable');
-assert(isequal(sort(u.subject),sort(groupAllocation.subject)) && ...
-       isequal(sort(u.group),  sort(groupAllocation.group)), ...
-       'Group‐allocation mismatch!');
+% merge to have one table containing all subjID, timePoint, wolf data
+clinicalData = horzcat(wolfData,groupAllocation.group);
 
-% % rename the timepoints i want. Account for all the variability in file
-% % names.
-% for scabbers=1:length(clinicalData.timePoint)
-%     currentID = clinicalData.timePoint{scabbers};
-%     if contains(clinicalData.timePoint{scabbers},"Baseline")
-%         clinicalData.timePoint{scabbers} = "Baseline";
-%     elseif contains(clinicalData.timePoint{scabbers},"BASELINE")
-%         clinicalData.timePoint{scabbers} = "Baseline";
-%     elseif contains(clinicalData.timePoint{scabbers},"B1")
-%         clinicalData.timePoint{scabbers} = "Baseline";
-%     elseif contains(clinicalData.timePoint{scabbers},"Post")
-%         clinicalData.timePoint{scabbers} = "Post";
-%     elseif contains(clinicalData.timePoint{scabbers},"POST")
-%         clinicalData.timePoint{scabbers} = "Post";
-%     elseif contains(clinicalData.timePoint{scabbers},"post")
-%         clinicalData.timePoint{scabbers} = "Post";
-%     elseif contains(clinicalData.timePoint{scabbers},"FU")
-%         clinicalData.timePoint{scabbers} = "FU";
-%     elseif contains(clinicalData.timePoint{scabbers},"FollowUp")
-%         clinicalData.timePoint{scabbers} = "FU";
-%     elseif contains(clinicalData.timePoint{scabbers},"Follow-Up")
-%         clinicalData.timePoint{scabbers} = "FU";
-%     end
-% end
+
+
+% finish changing the naming convention of the subjID
+for sirius=1:length(clinicalData.subjID)
+    currentID = clinicalData.subjID(sirius);
+    if length(clinicalData.subjID{sirius}) == 6
+        clinicalData.subjID{sirius} = regexprep(currentID,'TNT0+','TNT');
+    end
+end
+% rename the timepoints i want. Account for all the variability in file
+% names.
+for scabbers=1:length(clinicalData.timePoint)
+    currentID = clinicalData.timePoint{scabbers};
+    if contains(clinicalData.timePoint{scabbers},"Baseline")
+        clinicalData.timePoint{scabbers} = "Baseline";
+    elseif contains(clinicalData.timePoint{scabbers},"BASELINE")
+        clinicalData.timePoint{scabbers} = "Baseline";
+    elseif contains(clinicalData.timePoint{scabbers},"B1")
+        clinicalData.timePoint{scabbers} = "Baseline";
+    elseif contains(clinicalData.timePoint{scabbers},"Post")
+        clinicalData.timePoint{scabbers} = "Post";
+    elseif contains(clinicalData.timePoint{scabbers},"POST")
+        clinicalData.timePoint{scabbers} = "Post";
+    elseif contains(clinicalData.timePoint{scabbers},"post")
+        clinicalData.timePoint{scabbers} = "Post";
+    elseif contains(clinicalData.timePoint{scabbers},"FU")
+        clinicalData.timePoint{scabbers} = "FU";
+    elseif contains(clinicalData.timePoint{scabbers},"FollowUp")
+        clinicalData.timePoint{scabbers} = "FU";
+    elseif contains(clinicalData.timePoint{scabbers},"Follow-Up")
+        clinicalData.timePoint{scabbers} = "FU";
+    end
+end
 timeLabelsCell = {'Pre','Post','Follow up'};
 timeLabelsStr = ["Baseline","Post","FU"];
-clear Pre Post FU timePoint wolfTime subjID currentID sirius scabbers u
-
+clinicalData.timePoint = cellstr(clinicalData.timePoint);
+clear Pre Post FU timePoint wolfTime subjID currentID sirius scabbers
 allCMC = table(); % start big table for later
 
 %% CMC import
@@ -361,7 +367,7 @@ for y = 1:length(excelFileNames)
         cmcBetaFUZeroToTwo_FDI cmcBetaFUZeroToTwo_FDS cmcBetaPostNegTwoToZero_APB cmcBetaPostNegTwoToZero_EDC cmcBetaPostNegTwoToZero_FDI cmcBetaPostNegTwoToZero_FDS ... 
         cmcBetaPostZeroToTwo_APB cmcBetaPostZeroToTwo_EDC cmcBetaPostZeroToTwo_FDI cmcBetaPostZeroToTwo_FDS cmcBetaPreNegTwoToZero_APB cmcBetaPreNegTwoToZero_EDC cmcBetaPreNegTwoToZero_FDI... 
         cmcBetaPreNegTwoToZero_FDS cmcBetaPreZeroToTwo_APB cmcBetaPreZeroToTwo_EDC cmcBetaPreZeroToTwo_FDI cmcBetaPreZeroToTwo_FDS exclusion2NVcmc allDataTNT ...
-        exclusion2VcmcsheetsToRead cmcBetaFUVibNegTwoToZero_APB cmcBetaFUVibNegTwoToZero_EDC cmcBetaFUVibNegTwoToZero_FDI cmcBetaFUVibNegTwoToZero_FDS cmcBetaFUVibZeroToTwo_APB cmcBetaFUVibZeroToTwo_EDC cmcBetaFUVibZeroToTwo_FDI...
+        clinicalData exclusion2VcmcsheetsToRead cmcBetaFUVibNegTwoToZero_APB cmcBetaFUVibNegTwoToZero_EDC cmcBetaFUVibNegTwoToZero_FDI cmcBetaFUVibNegTwoToZero_FDS cmcBetaFUVibZeroToTwo_APB cmcBetaFUVibZeroToTwo_EDC cmcBetaFUVibZeroToTwo_FDI...
         cmcBetaFUVibZeroToTwo_FDS cmcBetaPostVibNegTwoToZero_APB cmcBetaPostVibNegTwoToZero_EDC cmcBetaPostVibNegTwoToZero_FDI cmcBetaPostVibNegTwoToZero_FDS cmcBetaPostVibZeroToTwo_APB cmcBetaPostVibZeroToTwo_EDC cmcBetaPostVibZeroToTwo_FDI cmcBetaPostVibZeroToTwo_FDS ...
         cmcBetaPreVibNegTwoToZero_APB cmcBetaPreVibNegTwoToZero_EDC cmcBetaPreVibNegTwoToZero_FDI cmcBetaPreVibNegTwoToZero_FDS cmcBetaPreVibZeroToTwo_APB cmcBetaPreVibZeroToTwo_EDC cmcBetaPreVibZeroToTwo_FDI cmcBetaPreVibZeroToTwo_FDS
 
