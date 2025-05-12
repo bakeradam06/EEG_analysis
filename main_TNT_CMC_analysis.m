@@ -36,6 +36,11 @@ sheetsToRead = {'reason','APB beta NoVib','FDI beta NoVib','FDS beta NoVib','EDC
 % ab updated 2024-10-23 to have new WMFT scores after blinded rater assessment
 
 wolfData = readtable("TNT_allData_AB_2025-05-08.xlsx",Sheet='dataForAb');
+wolfData.subject = regexprep(wolfData.subject, '^TNT_0+', 'TNT'); % reformat the naming in clinicalData
+d = strlength(wolfData.subject) == 4;
+wolfData.subject(d) = regexprep(wolfData.subject(d),'^TNT(\d)$','TNT0$1');
+wolfData.subject = string(wolfData.subject);
+
 subjects = unique(wolfData.subject);
 
 timePoint = {"Pre","Post","FU"};
@@ -43,39 +48,25 @@ timePoint = {"Pre","Post","FU"};
 groupAllocation = readtable('TNT_AllData_AB_2025-05-08.xlsx',Sheet="GroupAllocation"); % control=0, treatment=1
 groupAllocation.Properties.VariableNames(1:2) = ["subject","group"];
 
+groupAllocation.subject = regexprep(groupAllocation.subject, '^TNT_0+', 'TNT'); % reformat the naming in wolfData
+d = strlength(groupAllocation.subject) == 4;
+groupAllocation.subject(d) = regexprep(groupAllocation.subject(d),'^TNT(\d)$','TNT0$1');
+groupAllocation.subject = string(groupAllocation.subject);
+
 % join will automatically replicate each subject’s “group” for all of their sessions
 clinicalData = innerjoin(wolfData, groupAllocation, 'Keys', 'subject');
 
+% reformat the subjID's of clinicalData
+clinicalData.subject = regexprep(clinicalData.subject, '^TNT_0+', 'TNT'); % reformat the naming in clinicalData
+d = strlength(clinicalData.subject) == 4;
+clinicalData.subject(d) = regexprep(clinicalData.subject(d),'^TNT(\d)$','TNT0$1');
+clinicalData.subject = string(clinicalData.subject);
 % check to make sure groupAllcoation is correct compared to original import
 u = unique(clinicalData(:,{'subject','group'}),'rows','stable');
 assert(isequal(sort(u.subject),sort(groupAllocation.subject)) && ...
        isequal(sort(u.group),  sort(groupAllocation.group)), ...
        'Group‐allocation mismatch!');
 
-% % rename the timepoints i want. Account for all the variability in file
-% % names.
-% for scabbers=1:length(clinicalData.timePoint)
-%     currentID = clinicalData.timePoint{scabbers};
-%     if contains(clinicalData.timePoint{scabbers},"Baseline")
-%         clinicalData.timePoint{scabbers} = "Baseline";
-%     elseif contains(clinicalData.timePoint{scabbers},"BASELINE")
-%         clinicalData.timePoint{scabbers} = "Baseline";
-%     elseif contains(clinicalData.timePoint{scabbers},"B1")
-%         clinicalData.timePoint{scabbers} = "Baseline";
-%     elseif contains(clinicalData.timePoint{scabbers},"Post")
-%         clinicalData.timePoint{scabbers} = "Post";
-%     elseif contains(clinicalData.timePoint{scabbers},"POST")
-%         clinicalData.timePoint{scabbers} = "Post";
-%     elseif contains(clinicalData.timePoint{scabbers},"post")
-%         clinicalData.timePoint{scabbers} = "Post";
-%     elseif contains(clinicalData.timePoint{scabbers},"FU")
-%         clinicalData.timePoint{scabbers} = "FU";
-%     elseif contains(clinicalData.timePoint{scabbers},"FollowUp")
-%         clinicalData.timePoint{scabbers} = "FU";
-%     elseif contains(clinicalData.timePoint{scabbers},"Follow-Up")
-%         clinicalData.timePoint{scabbers} = "FU";
-%     end
-% end
 timeLabelsCell = {'Pre','Post','Follow up'};
 timeLabelsStr = ["Baseline","Post","FU"];
 clear Pre Post FU timePoint wolfTime subjID currentID sirius scabbers u
@@ -491,6 +482,7 @@ muscles = unique(allCMC.Muscle);
 bands    = ["Beta","Gamma"];
 phases   = ["Prep","Exe"];
 timeOrder = {'Pre','Post','FU'};
+timePoints2 = ["Baseline","Post 1","FU 1"]; % to fit the "clinicalData" table and loop through WMFT data to plot with CMC data
 conds = ["NoVib","Vib"];
 nPairs   = numel(pairsCmcChar);
 outDir = 'CMC_plots';
@@ -532,26 +524,68 @@ for iSubj=1:numel(subjects) % for all subjects
 
                     % group & average
                     tpCat = categorical(T.timePoint, timeOrder, timeOrder); % create categories of Pre Post FU, label them 1=Pre, 2=Post, 3=FU
-                    [G, TP] = findgroups(tpCat); % G is array of 1, 2, 3 according to tpCat, TP is "Pre", "Post", "FU"  
-                    M = splitapply(@(x) mean(x,1,'omitnan'), T{:,pairsCmcChar}, G); % 
+                    [G, TP] = findgroups(tpCat); % G is array of 1, 2, 3 according to tpCat, TP is "Pre", "Post", "FU"
+                    M = splitapply(@(x) mean(x,1,'omitnan'), T{:,pairsCmcChar}, G);
 
                     % plot each pair
                     for k = 1:nPairs
                         plot(ax, TP, M(:,k), '-o', 'DisplayName', pairsCmcChar{k});
                     end
 
+                    % overlay WMFT scores onto CMC plots
+                    hold(ax,'on')
+                    
+                    msk = strcmp(clinicalData.subject,currentSubj); % make logical mask of whether row corresp to currentSubj
+                    tempWMFT = clinicalData(msk,:); % make temp table with all cols and rows pertaining to currentSubj
+
+                    yyaxis(ax, 'right')
+                    hold(ax,'on')
+                    tp_idx = [];
+                    wmft   = [];
+                    for j=1:height(tempWMFT)
+                        session = tempWMFT.session{j}; % get current session
+                        if contains(session, 'Baseline','IgnoreCase',true)
+                            label = 'Pre';
+                        elseif contains(session, 'Post 1','IgnoreCase',true)
+                            label = 'Post';
+                        elseif contains(session, 'FU 1','IgnoreCase',true)
+                            label = 'FU';
+                        else
+                            continue
+                        end
+                        idx = find(strcmp(label, cellstr(TP)), 1);
+                        if ~isempty(idx)
+                            tp_idx(end+1) = idx;
+                            wmft(end+1) = tempWMFT.WMFTAverageTime_s_(j);
+                        end
+                    end
+                    plot(ax, TP(tp_idx), wmft,'s--','Color',[1 1 1], ...
+                        'MarkerEdgeColor','w', 'LineWidth',1.5);
+
+                    ylabel('WMFT time (s)');
+                    ax = gca;
+                    ax.YColor = [1 1 0.9]; % change color of WMFT axis to match WMFT line (white)
+                    ylim([0,120]);
+
                     title(ax, sprintf('%s | %s | %s', bands(iBand), conds(iCond), phases(iPhase)));
                     xlabel(ax,'TimePoint');
+
+                    yyaxis left
                     ylabel(ax,'Mean CMC');
+
                     if iBand==1 && iPhase==1 && iCond == 1
                         legend(ax,'Location','bestoutside');
                     end
+
                     hold(ax,'off');
                 end
             end
         end
-        % fname = sprintf('%s_%s_CMC.png', currentSubj, currentMus); % save figs from each muscle for each subject
-        % saveas(fig, fullfile(outDir, fname));
-        % close(fig);
+        fname = sprintf('%s_%s_CMC.png', currentSubj, currentMus); % save figs from each muscle for each subject
+        saveas(fig, fullfile(outDir, fname));
+        close(fig);
     end
+
+
 end
+
