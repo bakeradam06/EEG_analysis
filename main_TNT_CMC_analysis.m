@@ -492,11 +492,11 @@ if ~isfolder(outDir)
 end
 
 for iSubj=1:numel(subjects) % for all subjects
-    currentSubj = subjects(iSubj); % list curr subj
-    for iMus = 1:numel(muscles) % for all muscles
-        currentMus = muscles(iMus); % get currMuscle
+    currentSubj = subjects(iSubj); % list current subjID
+    for iMus = 1:numel(muscles) % for all muscles (APB, FDI, FDS, EDC)
+        currentMus = muscles(iMus); % get current muscle
 
-        % New figure for subject
+        % create new figure for this current subject
         fig = figure('Visible','off','Name', sprintf('%s – %s', currentSubj, currentMus), ...
             'NumberTitle','off');
         sgtitle(sprintf('Subject %s — %s CMC over Time', currentSubj, currentMus));
@@ -565,7 +565,7 @@ for iSubj=1:numel(subjects) % for all subjects
                     ylabel('WMFT time (s)');
                     ax = gca;
                     ax.YColor = [1 1 0.9]; % change color of WMFT axis to match WMFT line (white)
-                    ylim([0,120]);
+                    ylim([0,120]); % max of WMFT is 120s
 
                     title(ax, sprintf('%s | %s | %s', bands(iBand), conds(iCond), phases(iPhase)));
                     xlabel(ax,'TimePoint');
