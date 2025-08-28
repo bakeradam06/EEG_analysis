@@ -13,7 +13,7 @@ library(stringr) # for string manipulation
 library(janitor) # for data cleaning
 library(ggplot2) # for visualization
 
-######## 
+########
 
 # create loop for reading in all files in a directory
 # set working directory to folder with all step9 excel files
@@ -24,11 +24,8 @@ file_list <- list.files(pattern = "*.xlsm")
 
 # create function to loop through all excels and organize data into respective parts
 read_and_organize <- function(file_path) {
-    # get all sheets in excel file
+    # get all sheets in excel file # nolint: indentation_linter.
     sheets <- excel_sheets(file_path)
-    
+
     # read & process each sheet
-    
-    
-    
-    }
+}
