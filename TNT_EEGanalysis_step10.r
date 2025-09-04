@@ -7,10 +7,6 @@
 ## load libraries
 library(readxl) # for reading excel files
 library(dplyr) # for data manipulation
-library(tidyr) # for data tidying, reshaping
-library(purrr) # for functional programming, working with lists
-library(stringr) # for string manipulation
-library(janitor) # for data cleaning
 library(ggplot2) # for visualization
 
 ########
