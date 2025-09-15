@@ -8,6 +8,7 @@
 library(readr) # for reading csv files
 library(dplyr) # for data manipulation
 library(ggplot2) # for visualization
+library(tidyr) # for data tidying
 
 # import CSV file with subject IDs and analyze CMC over time, as well as beta vs gamma, muscle, brain region, etc
 # set working directory to folder with all step9 excel files
@@ -30,17 +31,29 @@ ggplot(summary_by_subject, aes(x = Subject, y = n_rows)) +
         y = "Number of Rows"
     )
 
-# second, check if missing data in any subject.
-# the rule here: data values must be >= minimum value of 5760 entries, otherwise error. (except for those wihtout full dataset, e.g., missing FU)
-# Got 5760 because for full dataset we have 120 trials per session (pre, post, FU). 60 under each condition (vib, no vib) for each. Since we're looking at beta and gamma, and under prep and execution phases, and across 4 different muscles, we should have 120 trials x 3 sessions x 2 phases x 2 bands x 4 muscles = 5760 rows per subject minimum (again, for those with full dataset). Therefore,
 
-missingData <- summary_by_subject %>%
-    filter(n_rows < 5760)
+# ---------------------- # ---------------------- #
+# ------------- add some motor data ------------- #
+# ---------------------- # ---------------------- #
 
-tnt05_data <- cmc_data %>%
-    filter(Subject == "TNT05")
+# load in csv data with demographics & motor data
+motor_demog_data <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/dataForStats/clean_covariates_2025-09-15.csv",
+    na = c("Invalid Number", "invalid number", "INVALID NUMBER", "blank", "Blank", "BLANK", "")
+)
 
-tnt05_data %>%
-    group_by(timePoint, Condition) %>%
-    dplyr::summarise(n = n()) %>%
-    arrange(timePoint, Condition)
+# need to organize the newly imported data into long format to match the cmc_data
+motor_demog_data_long <- motor_demog_data %>%
+  pivot_longer(
+    cols = -c(Subject, group, Sex, `TSS (month)`, `age (yr)`, race, `affected UE impacted?`),
+    names_to = "metric",
+    values_to = "value"
+  )
+
+# now, let's test the merger with one participant: TNT01
+test_merge <- cmc_data %>% # var named test_merge from cmc_data 
+  filter(Subject == "TNT01") %>% # filter for one subject TNT01
+  left_join( # left join with the motor_demog_data_long
+    motor_demog_data_long %>% # with motor demog data long, do
+      filter(Subject == "TNT01"), # just by same subject TNT01
+    by = "Subject" # by subject ID
+  )
