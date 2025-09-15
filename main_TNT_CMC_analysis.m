@@ -1,6 +1,8 @@
 
 % paths
 basePath = pwd; % needs to be run from TNTanalysis folder 
+% /Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis
+
 excelPath = fullfile(basePath, 'step9excel');
 addpath(fullfile(basePath, 'scripts'));
 % Denote region pairs (n = 28)
@@ -243,7 +245,7 @@ for y = 1:length(excelFileNames)
 
     %% start combining together Pre Post FU, then append exclusions
     
-    % Beta
+    % Beta -
         % -- NoVib --
         % Preparation phase (-2 to 0 before pinch cue)
         cmcBetaPrepNV_APB = vertcat(cmcBetaPreNegTwoToZero_APB,cmcBetaPostNegTwoToZero_APB,cmcBetaFUNegTwoToZero_APB);
@@ -589,3 +591,7 @@ for iSubj=1:numel(subjects) % for all subjects
 
 end
 
+%% Save allCMC data as csv for stats. 
+% should be saved in the "TNTanalysis" folder on my laptop
+
+writetable(allCMC,'cmcDataTNT.csv')
