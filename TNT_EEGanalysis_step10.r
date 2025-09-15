@@ -43,17 +43,17 @@ motor_demog_data <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-Medica
 
 # need to organize the newly imported data into long format to match the cmc_data
 motor_demog_data_long <- motor_demog_data %>%
-  pivot_longer(
-    cols = -c(Subject, group, Sex, `TSS (month)`, `age (yr)`, race, `affected UE impacted?`),
-    names_to = "metric",
-    values_to = "value"
-  )
+    pivot_longer(
+        cols = -c(Subject, group, Sex, `TSS (month)`, `age (yr)`, race, `affected UE impacted?`),
+        names_to = "metric",
+        values_to = "value"
+    )
 
 # now, let's test the merger with one participant: TNT01
-test_merge <- cmc_data %>% # var named test_merge from cmc_data 
-  filter(Subject == "TNT01") %>% # filter for one subject TNT01
-  left_join( # left join with the motor_demog_data_long
-    motor_demog_data_long %>% # with motor demog data long, do
-      filter(Subject == "TNT01"), # just by same subject TNT01
-    by = "Subject" # by subject ID
-  )
+test_merge <- cmc_data %>% # var named test_merge from cmc_data
+    filter(Subject == "TNT01") %>% # filter for one subject TNT01
+    left_join( # left join with the motor_demog_data_long
+        motor_demog_data_long %>% # with motor demog data long, do
+            filter(Subject == "TNT01"), # just by same subject TNT01
+        by = "Subject" # by subject ID
+    )
