@@ -41,7 +41,6 @@ motor_demog_data <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-Medica
     na = c("Invalid Number", "invalid number", "INVALID NUMBER", "blank", "Blank", "BLANK", "")
 )
 
-# need to organize the newly imported data into long format to match the cmc_data
 # remove pre-post and pre-fu variables before reshaping the data
 motor_demog_data <- motor_demog_data %>%
     select(-matches("PRE-POST|PRE-FU", ignore.case = TRUE))
