@@ -64,17 +64,44 @@ motor_demog_data_long <- motor_demog_data_long %>%
             TRUE ~ NA_character_
         ),
         metric = gsub("_Pre|_Post|_FU", "", metric, ignore.case = TRUE)
-)
-
-
-
-
+    )
 
 # now, let's test the merger with one participant: TNT01
 test_merge <- cmc_data %>% # var named test_merge from cmc_data
     filter(Subject == "TNT01") %>% # filter for one subject TNT01
-    left_join( # left join with the motor_demog_data_long
-        motor_demog_data_long %>% # with motor demog data long, do
+    left_join( # left join with the motor_demog_data
+        motor_demog_data %>% # with motor demog data
             filter(Subject == "TNT01"), # just by same subject TNT01
-        by = "Subject" # by subject ID
+        by = c("Subject") # by subject ID
     )
+
+# testing looks good. Now merge the full datasets
+cmc_data_full <- cmc_data %>%
+    left_join(
+        motor_demog_data,
+        by = c("Subject")
+    )
+
+### now, let's do some basic visualizations of the CMC data
+# boxplot of CMC values by timePoint and frequencyBand
+ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
+    geom_boxplot() +
+    theme_minimal() +
+    labs(
+        title = "CMC by Time Point and Frequency Band",
+        x = "Time Point",
+        y = "CMC - PML"
+    ) +
+    facet_wrap(~Muscle)
+
+# line plot of CMC values over time for each subject, colored by frequencyBand
+ggplot(cmc_data_full, aes(x = timePoint, y = PML, group = Subject, color = Band)) +
+    geom_line() +
+    geom_point() +
+    theme_minimal() +
+    labs(
+        title = "CMC Over Time by Subject and Frequency Band",
+        x = "Time Point",
+        y = "CMC - PML"
+    ) +
+    facet_wrap(~Muscle)
