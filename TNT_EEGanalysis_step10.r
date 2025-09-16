@@ -42,12 +42,33 @@ motor_demog_data <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-Medica
 )
 
 # need to organize the newly imported data into long format to match the cmc_data
+# remove pre-post and pre-fu variables before reshaping the data
+motor_demog_data <- motor_demog_data %>%
+    select(-matches("PRE-POST|PRE-FU", ignore.case = TRUE))
+
+# reshape to long format
 motor_demog_data_long <- motor_demog_data %>%
     pivot_longer(
         cols = -c(Subject, group, Sex, `TSS (month)`, `age (yr)`, race, `affected UE impacted?`),
         names_to = "metric",
         values_to = "value"
     )
+
+# add new column descirbing timePoint for matching to cmc_data
+motor_demog_data_long <- motor_demog_data_long %>%
+    mutate(
+        timePoint = case_when(
+            grepl("pre", metric, ignore.case = TRUE) ~ "Pre",
+            grepl("post", metric, ignore.case = TRUE) ~ "Post",
+            grepl("FU", metric, ignore.case = TRUE) ~ "FU",
+            TRUE ~ NA_character_
+        ),
+        metric = gsub("_Pre|_Post|_FU", "", metric, ignore.case = TRUE)
+)
+
+
+
+
 
 # now, let's test the merger with one participant: TNT01
 test_merge <- cmc_data %>% # var named test_merge from cmc_data
