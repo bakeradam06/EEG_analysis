@@ -65,15 +65,6 @@ motor_demog_data_long <- motor_demog_data_long %>%
         metric = gsub("_Pre|_Post|_FU", "", metric, ignore.case = TRUE)
     )
 
-# now, let's test the merger with one participant: TNT01
-test_merge <- cmc_data %>% # var named test_merge from cmc_data
-    filter(Subject == "TNT01") %>% # filter for one subject TNT01
-    left_join( # left join with the motor_demog_data
-        motor_demog_data %>% # with motor demog data
-            filter(Subject == "TNT01"), # just by same subject TNT01
-        by = c("Subject") # by subject ID
-    )
-
 # testing looks good. Now merge the full datasets
 cmc_data_full <- cmc_data %>%
     left_join(
@@ -81,7 +72,148 @@ cmc_data_full <- cmc_data %>%
         by = c("Subject")
     )
 
-### now, let's do some basic visualizations of the CMC data
+################################################
+########### descriptive statistics #############
+################################################
+
+# basic descriptives of cmc_data_full
+summary(cmc_data_full)
+
+# check for missing values
+missing_values <- sapply(cmc_data_full, function(x) sum(is.na(x)))
+print(missing_values)
+
+# histogram of age and various other demographics
+ggplot(cmc_data_full, aes(x = `age (yr)`)) + 
+  geom_histogram()
+
+# WMFT PRE
+ggplot(distinct(cmc_data_full, Subject, .keep_all = TRUE), 
+       aes(x = `WMFT PRE avg hand`)) + 
+  geom_histogram(binwidth = 10) +
+  labs(
+    title = "Distribution of WMFT PRE Average Hand Scores",
+    x = "WMFT PRE Average Hand Score",
+    y = "Number of Subjects"
+  )
+
+# FMA UE PRE 
+ggplot(distinct(cmc_data_full, Subject, .keep_all = TRUE), 
+       aes(x = `FMA PRE total /66`)) + 
+  geom_histogram(binwidth = 6) +
+  labs(
+    title = "Distribution of FMA PRE scores /66",
+    x = "FMA PRE /66",
+    y = "Number of Subjects"
+  )
+######################################################
+### Histogram of the Pre CMC data across all subjects, according to connection
+######################################################
+
+# Pre, NoVib, Beta, Prep
+ggplot(
+    filter(cmc_data_full, timePoint == "Pre" & Condition == "NoVib" & Band == "Beta" & Phase == "Prep"), 
+    aes(x = PML, fill = Muscle)
+ ) +
+    geom_histogram(binwidth = 0.01, position = "dodge") +
+    labs(
+        title = "Distribution of CMC values at Pre, NoVib, Beta, Prep",
+        x = "CMC value",
+        y = "count"
+    )
+# Pre, NoVib, Gamma, Prep
+ggplot(
+    filter(cmc_data_full, timePoint == "Pre" & Condition == "NoVib" & Band == "Gamma" & Phase == "Prep"), 
+    aes(x = PML, fill = Muscle)
+ ) +
+    geom_histogram(binwidth = 0.01, position = "dodge") +
+    labs(
+        title = "Distribution of CMC values at Pre, NoVib, Gamma, Prep",
+        x = "CMC value",
+        y = "count"
+    )
+
+# Pre, Vib, Beta, Prep
+ggplot(
+    filter(cmc_data_full, timePoint == "Pre" & Condition == "Vib" & Band == "Beta" & Phase == "Prep"), 
+    aes(x = PML, fill = Muscle)
+ ) +
+    geom_histogram(binwidth = 0.01, position = "dodge") +
+    labs(
+        title = "Distribution of CMC values at Pre, Vib, Beta, Prep",
+        x = "CMC value",
+        y = "count"
+    )
+
+
+# Pre, Vib, Gamma, Prep
+ggplot(
+    filter(cmc_data_full, timePoint == "Pre" & Condition == "Vib" & Band == "Gamma" & Phase == "Prep"), 
+    aes(x = PML, fill = Muscle)
+ ) +
+    geom_histogram(binwidth = 0.01, position = "dodge") +
+    labs(
+        title = "Distribution of CMC values at Pre, Vib, Gamma, Prep",
+        x = "CMC value",
+        y = "count"
+    )
+
+# they all look pretty normally distributed so far
+
+# Pre, NoVib, Beta, Exe
+ggplot(
+    filter(cmc_data_full, timePoint == "Pre" & Condition == "NoVib" & Band == "Beta" & Phase == "Exe"), 
+    aes(x = PML, fill = Muscle)
+ ) +
+    geom_histogram(binwidth = 0.01, position = "dodge") +
+    labs(
+        title = "Distribution of CMC values at Pre, NoVib, Beta, Exe",
+        x = "CMC value",
+        y = "count"
+    )
+
+# Pre, NoVib, Gamma, Exe
+ggplot(
+    filter(cmc_data_full, timePoint == "Pre" & Condition == "NoVib" & Band == "Gamma" & Phase == "Exe"), 
+    aes(x = PML, fill = Muscle)
+ ) +
+    geom_histogram(binwidth = 0.01, position = "dodge") +
+    labs(
+        title = "Distribution of CMC values at Pre, NoVib, Gamma, Exe",
+        x = "CMC value",
+        y = "count"
+    )
+
+# Pre, Vib, Beta, Exe
+ggplot(
+    filter(cmc_data_full, timePoint == "Pre" & Condition == "Vib" & Band == "Beta" & Phase == "Exe"), 
+    aes(x = PML, fill = Muscle)
+ ) +
+    geom_histogram(binwidth = 0.01, position = "dodge") +
+    labs(
+        title = "Distribution of CMC values at Pre, Vib, Beta, Exe",
+        x = "CMC value",
+        y = "count"
+    )
+
+# Pre, Vib, Gamma, Exe
+ggplot(
+    filter(cmc_data_full, timePoint == "Pre" & Condition == "Vib" & Band == "Gamma" & Phase == "Exe"), 
+    aes(x = PML, fill = Muscle)
+ ) +
+    geom_histogram(binwidth = 0.01, position = "dodge") +
+    labs(
+        title = "Distribution of CMC values at Pre, Vib, Gamma, Exe",
+        x = "CMC value",
+        y = "count"
+    )
+
+# still looks pretty normally distributed
+
+
+
+
+
 # boxplot of CMC values by timePoint and frequencyBand
 ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     geom_boxplot() +
