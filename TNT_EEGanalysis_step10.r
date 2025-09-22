@@ -208,12 +208,16 @@ ggplot(
         y = "count"
     )
 
-# still looks pretty normally distributed
+# still looks pretty normally distributed..
+
+ks.test(cmc_data_full$M1L, "pnorm", mean = 0, sd = 1)
+ggplot(cmc_data_full, aes(sample=M1N)) +
+  geom_qq() + 
+    geom_qq_line()
+# ks test suggests none of the coh data are normally distributed, but the histograms and qq plots look at least alrgith
 
 
-
-
-
+##### Boxplot #####
 # boxplot of CMC values by timePoint and frequencyBand
 ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     geom_boxplot() +
@@ -225,14 +229,8 @@ ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     ) +
     facet_wrap(~Muscle)
 
-# line plot of CMC values over time for each subject, colored by frequencyBand
-ggplot(cmc_data_full, aes(x = timePoint, y = PML, group = Subject, color = Band)) +
-    geom_line() +
-    geom_point() +
-    theme_minimal() +
-    labs(
-        title = "CMC Over Time by Subject and Frequency Band",
-        x = "Time Point",
-        y = "CMC - PML"
-    ) +
-    facet_wrap(~Muscle)
+########
+
+ggplot(cmc_data_full, aes(x = timePoint, y = M1N, color = Band)) +
+  geom_violin()
+  
