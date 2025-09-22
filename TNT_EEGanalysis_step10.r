@@ -214,7 +214,7 @@ ks.test(cmc_data_full$M1L, "pnorm", mean = 0, sd = 1)
 ggplot(cmc_data_full, aes(sample=M1N)) +
   geom_qq() + 
     geom_qq_line()
-# ks test suggests none of the coh data are normally distributed, but the histograms and qq plots look at least alrgith
+# ks test suggests none of the coh data are normally distributed, but the histograms and qq plots look at least alright
 
 
 ##### Boxplot #####
@@ -229,8 +229,11 @@ ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     ) +
     facet_wrap(~Muscle)
 
-########
+######## 
 
-ggplot(cmc_data_full, aes(x = timePoint, y = M1N, color = Band)) +
+ggplot(cmc_data_full, aes(x = timePoint, y = M1L, color = Band)) +
   geom_violin()
   
+ggplot(cmc_data_full, aes(x=group, y=PML, color = Band)) + 
+  geom_violin()
+
