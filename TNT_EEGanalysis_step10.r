@@ -72,12 +72,16 @@ cmc_data_full <- cmc_data %>%
         by = c("Subject")
     )
 
+# clean up 
+rm(cmc_data, motor_demog_data, motor_demog_data_long,summary_by_subject)
+
 ################################################
 ########### descriptive statistics #############
 ################################################
 
 # basic descriptives of cmc_data_full
 summary(cmc_data_full)
+describe(cmc_data_full)
 
 # check for missing values
 missing_values <- sapply(cmc_data_full, function(x) sum(is.na(x)))
@@ -87,9 +91,9 @@ print(missing_values)
 ggplot(cmc_data_full, aes(x = `age (yr)`)) + 
   geom_histogram()
 
-# WMFT PRE
+# WMFT PRE overall (not hand only)
 ggplot(distinct(cmc_data_full, Subject, .keep_all = TRUE), 
-       aes(x = `WMFT PRE avg hand`)) + 
+       aes(x = `WMFT PRE avg time`)) + 
   geom_histogram(binwidth = 10) +
   labs(
     title = "Distribution of WMFT PRE Average Hand Scores",
@@ -106,11 +110,13 @@ ggplot(distinct(cmc_data_full, Subject, .keep_all = TRUE),
     x = "FMA PRE /66",
     y = "Number of Subjects"
   )
+
 ######################################################
 ### Histogram of the Pre CMC data across all subjects, according to connection
 ######################################################
 
 # Pre, NoVib, Beta, Prep
+# first is PML (lesioned premotor cortex, PM)
 ggplot(
     filter(cmc_data_full, timePoint == "Pre" & Condition == "NoVib" & Band == "Beta" & Phase == "Prep"), 
     aes(x = PML, fill = Muscle)
@@ -145,7 +151,6 @@ ggplot(
         y = "count"
     )
 
-
 # Pre, Vib, Gamma, Prep
 ggplot(
     filter(cmc_data_full, timePoint == "Pre" & Condition == "Vib" & Band == "Gamma" & Phase == "Prep"), 
@@ -158,7 +163,7 @@ ggplot(
         y = "count"
     )
 
-# they all look pretty normally distributed so far
+# they all look pretty normally distributed so far on visual inspection
 
 # Pre, NoVib, Beta, Exe
 ggplot(
@@ -216,9 +221,11 @@ ggplot(cmc_data_full, aes(sample=M1N)) +
     geom_qq_line()
 # ks test suggests none of the coh data are normally distributed, but the histograms and qq plots look at least alright
 
+##############################
+######### Boxplots ###########
+##############################
 
-##### Boxplot #####
-# boxplot of CMC values by timePoint and frequencyBand
+# by timepoint and frequency band, interested in PML
 ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     geom_boxplot() +
     theme_minimal() +
@@ -229,11 +236,37 @@ ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     ) +
     facet_wrap(~Muscle)
 
-######## 
+##############################
+########## Violins ###########
+##############################
 
-ggplot(cmc_data_full, aes(x = timePoint, y = M1L, color = Band)) +
-  geom_violin()
+p <- ggplot(ToothGrowth, aes(x=dose, y=len)) + 
+  geom_violin(trim=FALSE)
+p + stat_summary(fun.data="mean_sdl", mult=, 
+                 geom="crossbar", width=0.2 )
+p + stat_summary(fun.data=mean_sdl, mult=1, 
+                 geom="pointrange", color="red")
+
+# M1L - by timePoint and Frequency
+p <- ggplot(cmc_data_full, aes(x = timePoint, y = M1L, color = Band)) +
+  geom_violin(trim = FALSE)
+p + stat_summary(fun.data="mean_sdl",mult=2,
+                 geom="crossbar",width=2)
+p + stat_summary(fun.data=mean_sdl, mult=2, 
+                 geom="pointrange", color="red")
+
   
-ggplot(cmc_data_full, aes(x=group, y=PML, color = Band)) + 
+# PML - by timePoint and Frequency
+ggplot(cmc_data_full, aes(x = timePoint, y = PML, color = Band)) + 
   geom_violin()
+
+
+
+
+
+
+
+
+
+
 
