@@ -1069,7 +1069,7 @@ writetable(betaPrepMaster,'betaPrepMasterCombine.csv');
 writetable(betaExeMaster,'betaExeMasterCombine.csv');
 
 %% other miscellanous tasks
-allAlphaPrepNV.suj = convertCharsToStrings(allAlphaPrepNV.subj);
+allAlphaPrepNV.subjectID = convertCharsToStrings(allAlphaPrepNV.subjectID);
 
 %% for loop for plotting frequency/ across subjects
 % ab used for MUSC SRD 2024
