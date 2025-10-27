@@ -60,7 +60,7 @@ motor_demog_data_long <- motor_demog_data %>%
     )
 ```
 
-add new column descirbing timePoint for matching to cmc_data
+add new column describing timePoint for matching to cmc_data
 
 ```{r}
 motor_demog_data_long <- motor_demog_data_long %>%
@@ -249,6 +249,7 @@ ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     facet_wrap(~Muscle)
 
 ```
+
 ##############################
 ########## Violins ###########
 ##############################
