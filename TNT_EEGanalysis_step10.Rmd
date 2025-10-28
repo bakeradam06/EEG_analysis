@@ -4,22 +4,22 @@
 ####### CMC analysis, potenitally for dissertation, conference abstract ########
 ################################################################################
 
-```{r}
+
 ## load libraries
 library(readr) # for reading csv files
 library(dplyr) # for data manipulation
 library(ggplot2) # for visualization
 library(tidyr) # for data tidying
-```
+
 
 # import CSV file with subject IDs and analyze CMC over time, as well as beta vs gamma, muscle, brain region, etc
 
-```{r}
+
 # set working directory to folder with all step9 excel files
 cmc_data <- read.csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/cmcDataTNT.csv")
-```
 
-```{r}
+
+
 # first, check how many rows there are per subject
 summary_by_subject <- cmc_data %>%
     group_by(Subject) %>%
@@ -34,19 +34,19 @@ ggplot(summary_by_subject, aes(x = Subject, y = n_rows)) +
         x = "Subject",
         y = "Number of Rows"
     )
-```
+
 
  ---------------------- # ---------------------- #
  ------------- add some motor data ------------- #
  ---------------------- # ---------------------- #
-```{r}
+
 # load in csv data with demographics & motor data
 motor_demog_data <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/dataForStats/clean_covariates_2025-09-15.csv",
     na = c("Invalid Number", "invalid number", "INVALID NUMBER", "blank", "Blank", "BLANK", "")
 )
-```
 
-```{r}
+
+
 # remove pre-post and pre-fu variables before reshaping the data
 motor_demog_data <- motor_demog_data %>%
     select(-matches("PRE-POST|PRE-FU", ignore.case = TRUE))
@@ -58,11 +58,11 @@ motor_demog_data_long <- motor_demog_data %>%
         names_to = "metric",
         values_to = "value"
     )
-```
 
-add new column describing timePoint for matching to cmc_data
 
-```{r}
+# add new column describing timePoint for matching to cmc_data
+
+
 motor_demog_data_long <- motor_demog_data_long %>%
     mutate(
         timePoint = case_when(
@@ -83,13 +83,13 @@ cmc_data_full <- cmc_data %>%
 
 # clean up 
 rm(cmc_data, motor_demog_data, motor_demog_data_long,summary_by_subject)
-```
+
 
 ################################################
 ########### descriptive statistics #############
 ################################################
 
-```{r}
+
 # basic descriptives of cmc_data_full
 summary(cmc_data_full)
 describe(cmc_data_full)
@@ -101,9 +101,9 @@ print(missing_values)
 # histogram of age and various other demographics
 ggplot(cmc_data_full, aes(x = `age (yr)`)) + 
   geom_histogram()
-```
 
-```{r}
+
+
 # WMFT PRE overall (not hand only)
 ggplot(distinct(cmc_data_full, Subject, .keep_all = TRUE), 
        aes(x = `WMFT PRE avg time`)) + 
@@ -123,13 +123,13 @@ ggplot(distinct(cmc_data_full, Subject, .keep_all = TRUE),
     x = "FMA PRE /66",
     y = "Number of Subjects"
   )
-```
+
 
 ######################################################
 ### Histogram of the Pre CMC data across all subjects, according to connection
 ######################################################
 
-```{r}
+
 # Pre, NoVib, Beta, Prep
 # first is PML (lesioned premotor cortex, PM)
 ggplot(
@@ -230,13 +230,12 @@ ggplot(
 
 # still looks pretty normally distributed
 
-```
 
 ##############################
 ######### Boxplots ###########
 ##############################
 
-```{r}
+
 # by timepoint and frequency band, interested in PML
 ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     geom_boxplot() +
@@ -248,13 +247,12 @@ ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
     ) +
     facet_wrap(~Muscle)
 
-```
 
 ##############################
 ########## Violins ###########
 ##############################
 
-```{r}
+
 p <- ggplot(ToothGrowth, aes(x=dose, y=len)) + 
   geom_violin(trim=FALSE)
 p + stat_summary(fun.data="mean_sdl", mult=, 
@@ -274,7 +272,6 @@ p + stat_summary(fun.data=mean_sdl, mult=2,
 # PML - by timePoint and Frequency
 ggplot(cmc_data_full, aes(x = timePoint, y = PML, color = Band)) + 
   geom_violin()
-```
 
 
 
