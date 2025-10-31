@@ -39,8 +39,7 @@ for sheet=1:length(sheetNames)
     end 
     clinicalData = [clinicalData, tempData];
 end 
-%%
-% reformat the subj naming convention in wolfData
+%% reformat subj naming convention in clinicalData
 clinicalData.subject = regexprep(clinicalData.subject, '^TNT_0+', 'TNT'); 
 d = strlength(clinicalData.subject) == 4;
 clinicalData.subject(d) = regexprep(clinicalData.subject(d),'^TNT(\d)$','TNT0$1');
@@ -53,6 +52,10 @@ subjects = unique(clinicalData.subject);
 strToRemove = 'days between Wk6-FU';
 subjects(subjects == strToRemove) = [];
 subjects(1) = []; % remove extra first row
+
+% do same for clinicalData
+clinicalData(clinicalData.subject == strToRemove,:) = [];
+clinicalData(clinicalData.subject == "",:) = [];
 
 timePoint = {"Pre","Post","FU"};
 clear d strToRemove tempData
@@ -85,33 +88,41 @@ BBT_NHPT_data = readtable("TNT_AllData_2025-10-31.xlsx", opts, "UseExcel", false
 BBT_NHPT_data(1,:) = [];
 BBT_NHPT_data = renamevars(BBT_NHPT_data, "Var1", "subject");
 BBT_NHPT_data = renamevars(BBT_NHPT_data, "Var2", "session");
+BBT_NHPT_data.subject = string(BBT_NHPT_data.subject);
 
-%% get rid of phone call rows. don't want them.
-rowsToKeep = ~ismember(BBT_NHPT_data.session,{'Call Wk 8','Call Wk 9'});
+%%
+% fix naming convention (again)
+BBT_NHPT_data.subject = regexprep(BBT_NHPT_data.subject, '^TNT_0+', 'TNT'); 
+d = strlength(BBT_NHPT_data.subject) == 4;
+BBT_NHPT_data.subject(d) = regexprep(BBT_NHPT_data.subject(d),'^TNT(\d)$','TNT0$1');
+BBT_NHPT_data.subject = string(BBT_NHPT_data.subject);
+
+clear opts sheet sheetNames
+
+%% get rid of phone call rows. don't want them at all.
+
+rowsToKeep = ~ismember(BBT_NHPT_data.session,{'Call Wk 8','Call Wk 9'}); % care about everything but these 
 BBT_NHPT_data = BBT_NHPT_data(rowsToKeep,:);
 
+clear rowsToKeep
 
+%% obtain group allocation
 
-for row = 1:height(BBT_NHPT_data)
-    if BBT_NHPT_data.session == 'Call Wk 8'
-        BBT_NHPT_data(row,:) = [];
-    elseif BBT_NHPT_data.session == 'Call Wk 9'
-        BBT_NHPT_data(row,:) = [];
-    end
-end
-
-
-
-
-%% get group allocation
-groupAllocation = readtable('TNT_allData_2025-10-31.xlsx',Sheet = "GroupAllocation"); % ctrl=0 trt=1
+groupAllocation = readtable('TNT_allData_2025-10-31.xlsx',Sheet = "GROUP ALLOCATION"); % ctrl=0 trt=1
 groupAllocation.Properties.VariableNames(1:2) = ["subject","group"];
 
-groupAllocation.subject = regexprep(groupAllocation.subject, '^TNT_0+', 'TNT'); % reformat the naming in wolfData
-d = strlength(groupAllocation.subject) == 4;
-groupAllocation.subject(d) = regexprep(groupAllocation.subject(d),'^TNT(\d)$','TNT0$1');
+%% join clinicalData & NHPT/BBT data
+
+% make sure subject is compatible with each other
+clinicalData.subject = string(clinicalData.subject);
+BBT_NHPT_data.subject = string(BBT_NHPT_data.subject);
 groupAllocation.subject = string(groupAllocation.subject);
 
+%%
+
+clinicalData2 = innerjoin(clinicalData,BBT_NHPT_data,'Keys','subject','');
+
+%%
 % join will automatically replicate each subject's "group" for all of their sessions
 clinicalData = innerjoin(clinicalData, groupAllocation, 'Keys', 'subject');
 
@@ -120,7 +131,8 @@ clinicalData.subject = regexprep(clinicalData.subject, '^TNT_0+', 'TNT'); % refo
 d = strlength(clinicalData.subject) == 4;
 clinicalData.subject(d) = regexprep(clinicalData.subject(d),'^TNT(\d)$','TNT0$1');
 clinicalData.subject = string(clinicalData.subject);
-% check to make sure groupAllcoation is correct compared to original import
+
+%% check to make sure groupAllcoation is correct compared to original import
 u = unique(clinicalData(:,{'subject','group'}),'rows','stable');
 
 assert(isequal(sort(u.subject),sort(groupAllocation.subject)) && ...
@@ -129,6 +141,8 @@ assert(isequal(sort(u.subject),sort(groupAllocation.subject)) && ...
 
 timeLabelsCell = {'Pre','Post','Follow up'};
 timeLabelsStr = ["Baseline","Post","FU"];
+
+
 clear Pre Post FU timePoint wolfTime subjID currentID sirius scabbers u
 
 end
