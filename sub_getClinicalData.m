@@ -102,9 +102,13 @@ clear opts sheet sheetNames
 
 %% get rid of phone call rows. don't want them at all.
 
-rowsToKeep = ~ismember(BBT_NHPT_data.session,{'Call Wk 8','Call Wk 9'}); % care about everything but these, and below
-rowsToKeep2 = ~ismember(BBT_NHPT_data.subject,{'days between Wk6-FU','avg. days between wk6 - fu (days / weeks)', 'min. days btwn wk6 - fu (days / weeks)',...
-    'max. days btwn wk6 - fu (days/weeks)', 'std. dev (s)'});
+% care about everything but these. samee for below
+rowsToKeep = ~ismember(BBT_NHPT_data.session,{'Call Wk 8','Call Wk 9'}); 
+rowsToKeep2 = ~ismember(BBT_NHPT_data.subject,{'days between Wk6-FU',...
+    'avg. days between wk6 - fu (days / weeks)', ...
+    'min. days btwn wk6 - fu (days / weeks)',...
+    'max. days btwn wk6 - fu (days/weeks)', ...
+    'std. dev (s)'});
 BBT_NHPT_data = BBT_NHPT_data(rowsToKeep,:);
 BBT_NHPT_data = BBT_NHPT_data(rowsToKeep2,:);
 
@@ -141,18 +145,19 @@ end
 % actual joining of two tables - NHPT/BBT with WMFT, ARAT
 clinicalData = join(clinicalData, BBT_NHPT_data); 
 
-% do some checks. NHPT.
+% do some checks. NHPT
 if ~isequal(clinicalData.NHPTafffected, BBT_NHPT_data.NHPTafffected)
     disp('ERROR: NHPT/BBT data did not join properly. check and correct')
     return 
 end
-% same for bbt
+
+% aaaand bbt
 if ~isequal(clinicalData.BBTaffected, BBT_NHPT_data.BBTaffected)
     disp('ERROR: NHPT/BBT data did not join properly. check and correct')
     return 
 end
 
-% now join group allocation
+% join group allocation
 clinicalData = join(clinicalData, groupAllocation);
 
 % check to make sure group allocation merge occurred successfully
@@ -162,7 +167,7 @@ if ~isequal(clinicalData.group, groupAllocation.group)
 end
 
 %% reformat the subjID's of clinicalData
-clinicalData.subject = regexprep(clinicalData.subject, '^TNT_0+', 'TNT'); % reformat the naming in clinicalData
+clinicalData.subject = regexprep(clinicalData.subject, '^TNT_0+', 'TNT'); 
 d = strlength(clinicalData.subject) == 4;
 clinicalData.subject(d) = regexprep(clinicalData.subject(d),'^TNT(\d)$','TNT0$1');
 clinicalData.subject = string(clinicalData.subject);
