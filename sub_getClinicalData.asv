@@ -145,23 +145,21 @@ end
 % actual joining of two tables - NHPT/BBT with WMFT, ARAT
 clinicalData = join(clinicalData, BBT_NHPT_data); 
 
-% do some checks. NHPT NaN's. have to work around since no NaN is 
-% considered the same.
+% do some checks. NHPT NaN's.
 if ~all(isnan(clinicalData.NHPTafffected) == isnan(BBT_NHPT_data.NHPTafffected)) == 1
-    disp('ERROR: NHPT/BBT NaNs are not the same. something is weird. check and correct')
+    disp('ERROR: NHPT/BBT Na did not join properly. check and correct')
     return 
 end
+%% index the NaN's. find not NaN's.
+a = isnan(clinicalData.NHPTafffected);
+b = isnan(BBT_NHPT_data.NHPTafffected);
 
-% index the NaN's. find not NaN's. confirm non-NaN's are the same.
-a = ~isnan(clinicalData.NHPTafffected); % not NaN's
-b = ~isnan(BBT_NHPT_data.NHPTafffected);
-noNaNa = clinicalData.NHPTafffected(a); % ID the values that aren't NaN
-noNaNb = BBT_NHPT_data.NHPTafffected(b);
+noNaNa = ~a;
+noNaNb = ~b;
 
-if ~isequal(noNaNa,noNaNb) % compare these values with each other.
+if ~isequal(a,b);
     disp('ERROR: NHPT/BBT data did not join properly. check and correct')
-    return
-end
+
 
 %%
 % aaaand bbt
