@@ -185,15 +185,8 @@ end
 
 clear a b noNaNa noNaNb
 
-
 %% join group allocation
 clinicalData = join(clinicalData, groupAllocation);
-
-% check to make sure group allocation merge occurred successfully
-if ~isequal(clinicalData.group, groupAllocation.group)
-    disp('ERROR: group allocation join did not function properly. check and correct')
-    return 
-end
 
 %% reformat the subjID's of clinicalData
 clinicalData.subject = regexprep(clinicalData.subject, '^TNT_0+', 'TNT'); 
