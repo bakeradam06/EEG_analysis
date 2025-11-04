@@ -125,9 +125,9 @@ clinicalData.session = string(clinicalData.session);
 BBT_NHPT_data.session = string(BBT_NHPT_data.session);
 groupAllocation.subject = string(groupAllocation.subject);
 
-%% merge clinicalData & BBT/NHPT data. 
+%% merge WMFT/ARAT with BBT/NHPT & group allocation 
 
-% check subject, session identical. need to be for innerjoin command.
+% check subject, session identical. needs to be for join command.
 if ~isequal(clinicalData.subject,BBT_NHPT_data.subject) % should return 1.
     disp('WARNING: clinical data subjectid and BBT_NHPT_data subject id not same.')
     return
@@ -138,15 +138,30 @@ if ~isequal(clinicalData.session,BBT_NHPT_data.session) % should also return 1.
     return
 end
 
-% actual joining two datasets
+% actual joining of two tables - NHPT/BBT with WMFT, ARAT
 clinicalData = join(clinicalData, BBT_NHPT_data); 
 
+% do some checks. NHPT.
+if ~isequal(clinicalData.NHPTafffected, BBT_NHPT_data.NHPTafffected)
+    disp('ERROR: NHPT/BBT data did not join properly. check and correct')
+    return 
+end
+% same for bbt
+if ~isequal(clinicalData.BBTaffected, BBT_NHPT_data.BBTaffected)
+    disp('ERROR: NHPT/BBT data did not join properly. check and correct')
+    return 
+end
 
-%%
-% join will automatically replicate each subject's "group" for all of their sessions
-clinicalData = innerjoin(clinicalData, groupAllocation, 'Keys', {'subject'},{'session'});
+% now join group allocation
+clinicalData = join(clinicalData, groupAllocation);
 
-% reformat the subjID's of clinicalData
+% check to make sure group allocation merge occurred successfully
+if ~isequal(clinicalData.group, groupAllocation.group)
+    disp('ERROR: group allocation join did not function properly. check and correct')
+    return 
+end
+
+%% reformat the subjID's of clinicalData
 clinicalData.subject = regexprep(clinicalData.subject, '^TNT_0+', 'TNT'); % reformat the naming in clinicalData
 d = strlength(clinicalData.subject) == 4;
 clinicalData.subject(d) = regexprep(clinicalData.subject(d),'^TNT(\d)$','TNT0$1');
