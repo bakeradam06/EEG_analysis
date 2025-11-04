@@ -183,16 +183,10 @@ if ~isequal(noNaNa,noNaNb) % compare these values with each other.
     return
 end
 
-clear a b noNaNa noNaNb
+clear a b noNaNa noNaNb BBT_NHPT_data colsToKeep subjects d
 
 %% join group allocation
 clinicalData = join(clinicalData, groupAllocation);
-
-%% reformat the subjID's of clinicalData
-clinicalData.subject = regexprep(clinicalData.subject, '^TNT_0+', 'TNT'); 
-d = strlength(clinicalData.subject) == 4;
-clinicalData.subject(d) = regexprep(clinicalData.subject(d),'^TNT(\d)$','TNT0$1');
-clinicalData.subject = string(clinicalData.subject);
 
 %% check to make sure groupAllcoation is correct compared to original import
 u = unique(clinicalData(:,{'subject','group'}),'rows','stable');
