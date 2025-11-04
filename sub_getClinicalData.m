@@ -138,13 +138,8 @@ if ~isequal(clinicalData.session,BBT_NHPT_data.session) % should also return 1.
     return
 end
 
-%%% actual merging
-
-clinicalData2 = innerjoin(clinicalData, BBT_NHPT_data,'Keys','subject','Keys','session'); 
-
-
-
-
+% actual joining two datasets
+clinicalData = join(clinicalData, BBT_NHPT_data); 
 
 
 %%
