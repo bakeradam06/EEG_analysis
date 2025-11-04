@@ -467,13 +467,19 @@ allCMC2.session(fuIdx) = "FU 1";
 allCMC = removevars(allCMC, "openIncludeTrial");
 allCMC2 = removevars(allCMC2, "openIncludeTrial");
 
+%% save so i don't have to keep runnning this code above
+writetable(allCMC,'allCMC.txt')
+writetable(allCMC2,'allCMC2.txt')
+
 %% combine allCMC with clinicalData
-allData = outerjoin(allCMC2,clinicalData,'Key','Subject','Key','session');
+%allData = outerjoin(clinicalData,allCMC2,'Key','Subject','Key','session');
+
+allData = innerjoin(clinicalData,allCMC2,'Key',{'Subject','session'});
 
 
+%% save for now. Need to confirm accuracy before accepting.
 
-
-
+writetable(allData,'allDataTest1.txt')
 
 
     
