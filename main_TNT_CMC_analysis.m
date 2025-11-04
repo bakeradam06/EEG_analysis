@@ -441,6 +441,41 @@ for y = 1:length(excelFileNames)
         allCMC.Muscle = string(allCMC.Muscle);
     end
 end
+
+%% rearrange allCMC into true long format. 
+allCMC2 = stack(allCMC,["PML","S1L","M1L","SML","PMN","S1N","M1N","SMN"]);
+
+% rename the indicator var and coh var
+allCMC2 = renamevars(allCMC2, "PML_S1L_M1L_SML_PMN_S1N_M1N_SMN_Indicator", "BrainRegion");
+allCMC2 = renamevars(allCMC2, "PML_S1L_M1L_SML_PMN_S1N_M1N_SMN", "Coh");
+
+% rename timePoint/session coluimn name and entries so i can then merge by them
+allCMC2 = renamevars(allCMC2,'timePoint','session');
+
+% rename entries of allCMC2.session to Baseline inst of Pre, Post 1 inst of Post, and FU 1 inst of FU
+
+% idx of rows want to change
+preIdx = contains(allCMC2.session,"Pre");
+postIdx = contains(allCMC2.session,"Post");
+fuIdx = contains(allCMC2.session,"FU");
+% rename
+allCMC2.session(preIdx) = "Baseline";
+allCMC2.session(postIdx) = "Post 1";
+allCMC2.session(fuIdx) = "FU 1";
+
+%% disregard the open incldue trial. i'm only looking at pinch for now
+allCMC = removevars(allCMC, "openIncludeTrial");
+allCMC2 = removevars(allCMC2, "openIncludeTrial");
+
+%% combine allCMC with clinicalData
+allData = outerjoin(allCMC2,clinicalData,'Key','Subject','Key','session');
+
+
+
+
+
+
+
     
 %% clear more vars
 clear cmcBetaExeNV_APB cmcBetaExeNV_EDC cmcBetaExeNV_FDI cmcBetaExeNV_FDS cmcBetaExeV_APB cmcBetaExeV_EDC cmcBetaExeV_FDI cmcBetaExeV_FDS cmcBetaPrepNV_APB cmcBetaPrepNV_EDC cmcBetaPrepNV_FDI cmcBetaPrepNV_FDS cmcBetaPrepV_APB cmcBetaPrepV_EDC cmcBetaPrepV_FDI cmcBetaPrepV_FDS cmcGammaExeNV_APB cmcGammaExeNV_EDC cmcGammaExeNV_FDI cmcGammaExeNV_FDS cmcGammaExeV_APB cmcGammaExeV_EDC cmcGammaExeV_FDI cmcGammaExeV_FDS cmcGammaPrepNV_APB cmcGammaPrepNV_EDC cmcGammaPrepNV_FDI cmcGammaPrepNV_FDS cmcGammaPrepV_APB cmcGammaPrepV_EDC cmcGammaPrepV_FDI cmcGammaPrepV_FDS ...
@@ -561,21 +596,6 @@ for iSubj=1:numel(subjects) % for all subjects
         close(fig);
     end
 end
-
-%% rearrange allCMC into true long format. 
-allCMC2 = stack(allCMC,["PML","S1L","M1L","SML","PMN","S1N","M1N","SMN"]);
-
-% test to confirm stack is correct. not working currently as of 10/31 AM.
-allCMC3 = unstack(allCMC2,"PML_S1L_M1L_SML_PMN_S1N_M1N_SMN","PML_S1L_M1L_SML_PMN_S1N_M1N_SMN_Indicator");
-
-%%
-% rename the indicator var and coh var
-allCMC2 = renamevars(allCMC2, "PML_S1L_M1L_SML_PMN_S1N_M1N_SMN_Indicator", "BrainRegion");
-allCMC2 = renamevars(allCMC2, "PML_S1L_M1L_SML_PMN_S1N_M1N_SMN", "Coh");
-
-% disregard the open incldue trial. i'm only looking at pinch for now
-allCMC = removevars(allCMC, "openIncludeTrial");
-allCMC2 = removevars(allCMC2, "openIncludeTrial");
 
 %% Save allCMC data as csv, txt, mat. 
 % should be saved in the "TNTanalysis" folder
