@@ -59,7 +59,7 @@ clinicalData(clinicalData.subject == "",:) = [];
 
 timePoint = {'Pre', 'Post', 'FU'};
 
-clear d strToRemove tempData
+clear d strToRemove tempData colsToKeep
 
 %% get BBT & NHPT data
 % slightly more steps bc clinicalAssessments tab has phone call 1
@@ -104,15 +104,17 @@ clear opts sheet sheetNames
 
 % care about everything but these. samee for below
 rowsToKeep = ~ismember(BBT_NHPT_data.session,{'Call Wk 8','Call Wk 9'}); 
+BBT_NHPT_data = BBT_NHPT_data(rowsToKeep,:);
+
+
 rowsToKeep2 = ~ismember(BBT_NHPT_data.subject,{'days between Wk6-FU',...
     'avg. days between wk6 - fu (days / weeks)', ...
     'min. days btwn wk6 - fu (days / weeks)',...
     'max. days btwn wk6 - fu (days/weeks)', ...
     'std. dev (s)'});
-BBT_NHPT_data = BBT_NHPT_data(rowsToKeep,:);
 BBT_NHPT_data = BBT_NHPT_data(rowsToKeep2,:);
 
-clear rowsToKeep rowsToKeep2
+clear rowsToKeep rowsToKeep2 d
 
 %% obtain group allocation
 

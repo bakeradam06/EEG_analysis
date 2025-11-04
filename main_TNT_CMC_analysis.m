@@ -38,11 +38,9 @@ sheetsToRead = {'reason','APB beta NoVib','FDI beta NoVib','FDS beta NoVib','EDC
 
 [clinicalData] = sub_getClinicalData();
 
-clear Pre Post FU timePoint
-%%
-% start big table for later
-allCMC = table();
+%% start big table for later
 
+allCMC = table();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%% CMC import %%%%%%%%%%%%%%%%%
