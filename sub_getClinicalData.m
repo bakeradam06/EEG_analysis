@@ -200,4 +200,8 @@ assert(isequal(sort(u.subject),sort(groupAllocation.subject)) && ...
 timeLabelsCell = {'Pre','Post','Follow up'};
 timeLabelsStr = ["Baseline","Post","FU"];
 
+% change name of clinicalData.subject to be capital Subject
+% makes it fit better to join with allCMC later.
+clinicalData = renamevars(clinicalData, "subject", "Subject");
+
 end
