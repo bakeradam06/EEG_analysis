@@ -198,7 +198,4 @@ assert(isequal(sort(u.subject),sort(groupAllocation.subject)) && ...
 timeLabelsCell = {'Pre','Post','Follow up'};
 timeLabelsStr = ["Baseline","Post","FU"];
 
-
-clear Pre Post FU timePoint wolfTime subjID currentID sirius scabbers u
-
 end
