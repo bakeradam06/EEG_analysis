@@ -210,7 +210,7 @@ if ~isequal(unqueClinDataSess(:), goodSessList(:))
     badSess = setdiff(unqueClinDataSess, goodSessList);
     disp('ERROR: clinicalData.session not correct. check and modify')
     if ~isempty(badSess)
-        disp(badSess)
+        disp(badSess) % display the wrongly listed session
     end
     return
 end

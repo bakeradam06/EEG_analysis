@@ -474,7 +474,9 @@ writetable(allCMC2,'allCMC2.txt')
 %% combine allCMC with clinicalData
 %allData = outerjoin(clinicalData,allCMC2,'Key','Subject','Key','session');
 
-allData = outerjoin(clinicalData,allCMC2,'Key',{'Subject','session'});
+% allData = outerjoin(clinicalData,allCMC2,'Key',{'Subject','session'});
+
+allData2 = outerjoin(allCMC2,clinicalData,'Keys',{'Subject','session'});
 
 
 %% save for now. Need to confirm accuracy before accepting.
