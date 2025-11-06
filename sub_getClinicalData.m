@@ -32,10 +32,6 @@ for sheet=1:length(sheetNames)
                                 %         ["FMAscore66", "FMAscore60"]);
                                 %     colsToKeep = {"FMAscore66", "FMAscore60"};
                                 %     tempData = tempData(:,colsToKeep);
-                                % case 4 % bbt
-                                %     tempData = renamevars(tempdata,["Var10","BBTaffected"]);
-                                %     colsToKeep = {"BBTaffected"};
-                                %     tempData = tempData(:,colsToKeep);
     end 
     clinicalData = [clinicalData, tempData];
 end 
@@ -203,5 +199,16 @@ timeLabelsStr = ["Baseline","Post","FU"];
 % change name of clinicalData.subject to be capital Subject
 % makes it fit better to join with allCMC later.
 clinicalData = renamevars(clinicalData, "subject", "Subject");
+
+%% final checks
+goodSessList = {'Baseline', 'FU 1', 'Post 1', 'Wk1', 'Wk2', ...
+    'Wk3', 'Wk4', 'Wk5', 'Wk6'};
+
+% check if all entries into clinicalData.session are appropriate
+unqueClinDataSess = cellstr(unique(clinicalData.session));
+if ~isequal(unqueClinDataSess(:), goodSessList(:))
+    disp('ERROR: clinicalData.session not correct. check and modify')
+    return
+end
 
 end
