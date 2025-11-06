@@ -207,7 +207,11 @@ goodSessList = {'Baseline', 'FU 1', 'Post 1', 'Wk1', 'Wk2', ...
 % check if all entries into clinicalData.session are appropriate
 unqueClinDataSess = cellstr(unique(clinicalData.session));
 if ~isequal(unqueClinDataSess(:), goodSessList(:))
+    badSess = setdiff(unqueClinDataSess, goodSessList);
     disp('ERROR: clinicalData.session not correct. check and modify')
+    if ~isempty(badSess)
+        disp(badSess)
+    end
     return
 end
 
