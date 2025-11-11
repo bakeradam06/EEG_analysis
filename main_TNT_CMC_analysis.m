@@ -471,23 +471,28 @@ allCMC2 = removevars(allCMC2, "openIncludeTrial");
 writetable(allCMC,'allCMC.txt')
 writetable(allCMC2,'allCMC2.txt')
 
+%% compress clinicalData to only pre post FU
+sessions_short = {'Baseline','Post 1','FU 1'};
+shortIdx = contains(clinicalData.session, sessions_short);
+
+clinicalData_short = clinicalData(shortIdx,:);
+
+clear sessions_short shortIdx
+
 %% combine allCMC with clinicalData
-%allData = outerjoin(clinicalData,allCMC2,'Key','Subject','Key','session');
+allData = outerjoin(allCMC2, clinicalData_short,'Keys',{'Subject','session'},'MergeKeys',true);
 
-% allData = outerjoin(clinicalData,allCMC2,'Key',{'Subject','session'});
-
-allData2 = outerjoin(allCMC2,clinicalData,'Keys',{'Subject','session'});
-
-
-%% save for now. Need to confirm accuracy before accepting.
-
-writetable(allData,'allDataTest1.txt')
-
-
+% save 
+writetable(allData,'allDataForAnalyze.txt')
     
 %% clear more vars
-clear cmcBetaExeNV_APB cmcBetaExeNV_EDC cmcBetaExeNV_FDI cmcBetaExeNV_FDS cmcBetaExeV_APB cmcBetaExeV_EDC cmcBetaExeV_FDI cmcBetaExeV_FDS cmcBetaPrepNV_APB cmcBetaPrepNV_EDC cmcBetaPrepNV_FDI cmcBetaPrepNV_FDS cmcBetaPrepV_APB cmcBetaPrepV_EDC cmcBetaPrepV_FDI cmcBetaPrepV_FDS cmcGammaExeNV_APB cmcGammaExeNV_EDC cmcGammaExeNV_FDI cmcGammaExeNV_FDS cmcGammaExeV_APB cmcGammaExeV_EDC cmcGammaExeV_FDI cmcGammaExeV_FDS cmcGammaPrepNV_APB cmcGammaPrepNV_EDC cmcGammaPrepNV_FDI cmcGammaPrepNV_FDS cmcGammaPrepV_APB cmcGammaPrepV_EDC cmcGammaPrepV_FDI cmcGammaPrepV_FDS ...
-    cond currentTable parts tableDir tableNames currentName currentExcelFile currentPt main i muscle band phase basePath
+clear cmcBetaExeNV_APB cmcBetaExeNV_EDC cmcBetaExeNV_FDI cmcBetaExeNV_FDS cmcBetaExeV_APB cmcBetaExeV_EDC ...
+    cmcBetaExeV_FDI cmcBetaExeV_FDS cmcBetaPrepNV_APB cmcBetaPrepNV_EDC cmcBetaPrepNV_FDI cmcBetaPrepNV_FDS ...
+    cmcBetaPrepV_APB cmcBetaPrepV_EDC cmcBetaPrepV_FDI cmcBetaPrepV_FDS cmcGammaExeNV_APB cmcGammaExeNV_EDC ...
+    cmcGammaExeNV_FDI cmcGammaExeNV_FDS cmcGammaExeV_APB cmcGammaExeV_EDC cmcGammaExeV_FDI cmcGammaExeV_FDS ...
+    cmcGammaPrepNV_APB cmcGammaPrepNV_EDC cmcGammaPrepNV_FDI cmcGammaPrepNV_FDS cmcGammaPrepV_APB ...
+    cmcGammaPrepV_EDC cmcGammaPrepV_FDI cmcGammaPrepV_FDS cond currentTable parts tableDir tableNames ...
+    currentName currentExcelFile currentPt main i muscle band phase basePath
 
 %% start plotting
 
@@ -529,10 +534,10 @@ for iSubj=1:numel(subjects) % for all subjects
                     hold(ax,'on');
 
                     selection = allCMC.Subject == currentSubj & ... % get currSubj
-                        allCMC.Muscle        == currentMus   & ... % get currMuscle
-                        allCMC.Band          == bands(iBand) & ... % get currBand
-                        allCMC.Condition     == conds(iCond) & ... % get currVib/NoVib
-                        allCMC.Phase         == phases(iPhase); % get currPhase
+                        allCMC.Muscle        == currentMus   & ...  % get currMuscle
+                        allCMC.Band          == bands(iBand) & ...  % get currBand
+                        allCMC.Condition     == conds(iCond) & ...  % get currVib/NoVib
+                        allCMC.Phase         == phases(iPhase);     % get currPhase
                     T = allCMC(selection,:); % use the above to generate a temp table from allCMC - "selection"
 
                     if isempty(T) % if tempTable T is empty, do something
@@ -614,14 +619,10 @@ writetable(allCMC2,'cmcDataTNT2.csv')
 writetable(allCMC,'cmcDataTNT.txt')
 writetable(allCMC2,'cmcDataTNT2.txt')
 
-
-
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%% End data wrangling %%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 % see step11 script for analyzing CMC data for outcomes.
 
