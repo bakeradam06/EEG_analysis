@@ -11,7 +11,7 @@
 
 %% load txt dataset from data wrangling script above
 
-allCMC = readtable("cmcDataTNT2.txt");
+allCMC = readtable("allDataForAnalysis.txt");
 
 
 %% explore data

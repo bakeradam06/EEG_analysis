@@ -558,7 +558,7 @@ for iSubj=1:numel(subjects) % for all subjects
                     % overlay WMFT scores onto CMC plots
                     hold(ax,'on')
                     
-                    msk = strcmp(clinicalData.subject,currentSubj);             % make logical mask of whether row corresp to currentSubj
+                    msk = strcmp(clinicalData.Subject,currentSubj);             % make logical mask of whether row corresp to currentSubj
                     tempWMFT = clinicalData(msk,:);                             % make temp table with all cols and rows pertaining to currentSubj
 
                     yyaxis(ax, 'right')
@@ -579,7 +579,7 @@ for iSubj=1:numel(subjects) % for all subjects
                         idx = find(strcmp(label, cellstr(TP)), 1);
                         if ~isempty(idx)
                             tp_idx(end+1) = idx;
-                            wmft(end+1) = tempWMFT.WMFTAverageTime_s_(j);
+                            wmft(end+1) = tempWMFT.WMFTavgHand(j);
                         end
                     end
                     plot(ax, TP(tp_idx), wmft,'s--','Color',[1 1 1], ...            
