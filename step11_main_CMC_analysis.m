@@ -14,4 +14,5 @@ allData = readtable("allDataForAnalyze.txt");
 
 %% explore data
 
-plot(allData.Coh, allData.WMFTavgHand, {'Subject','Band', 'Phase','Condition','Muscle'});
+figure
+scatter(allData.Coh, allData.WMFTavgHand);
