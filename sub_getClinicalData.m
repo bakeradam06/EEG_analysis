@@ -147,14 +147,13 @@ end
 BBT_NHPT_data = tables{1};
 demog = tables{2};
 
-clear opts sheet sheetNames i tempTable d tables
+clear opts sheet sheetNames i tempTable d tables matchedIndices
 
 %% get rid of phone call rows. don't want them at all.
 
 % care about everything but these. samee for below
 rowsToKeep = ~ismember(BBT_NHPT_data.session,{'Call Wk 8','Call Wk 9'}); 
 BBT_NHPT_data = BBT_NHPT_data(rowsToKeep,:);
-
 
 rowsToKeep2 = ~ismember(BBT_NHPT_data.subject,{'days between Wk6-FU',...
     'avg. days between wk6 - fu (days / weeks)', ...
@@ -176,9 +175,10 @@ groupAllocation.Properties.VariableNames(1:2) = ["subject","group"];
 clinicalData.subject = string(clinicalData.subject);
 BBT_NHPT_data.subject = string(BBT_NHPT_data.subject);
 groupAllocation.subject = string(groupAllocation.subject);
+groupAllocation.subject = string(groupAllocation.subject);
+demog.subject = string(demog.subject);
 clinicalData.session = string(clinicalData.session);
 BBT_NHPT_data.session = string(BBT_NHPT_data.session);
-groupAllocation.subject = string(groupAllocation.subject);
 
 %% merge WMFT/ARAT with BBT/NHPT & group allocation 
 
@@ -195,6 +195,9 @@ end
 
 % actual joining of two tables - NHPT/BBT with WMFT, ARAT
 clinicalData = join(clinicalData, BBT_NHPT_data); 
+
+%% join demographics and clinicalData
+clinicalData = join(clinicalData, demog);
 
 %% do some checks. 
 % NHPT NaN's. have to work around since no NaN in matlab is 
