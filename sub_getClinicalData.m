@@ -87,6 +87,44 @@ BBT_NHPT_data = renamevars(BBT_NHPT_data, "Var1", "subject");
 BBT_NHPT_data = renamevars(BBT_NHPT_data, "Var2", "session");
 BBT_NHPT_data.subject = string(BBT_NHPT_data.subject);
 
+%% obtain demographics
+% gen from MATLAB import tool. used as template.
+opts = spreadsheetImportOptions("NumVariables", 37);
+
+% Specify sheet and range
+opts.Sheet = "Demographics";
+opts.DataRange = "A2:AK88";
+
+% Specify column names and types
+opts.VariableNames = ["Var1", "Var2", "Var3", "Var4", "Var5", "Var6", "Var7", "Var8", "Var9", "Var10", "Var11", "Var12", "Var13", "Var14", "Var15", "Var16", "x22", "x30", "Var19", "x0", "x14", "Var22", "Var23", "Var24", "Var25", "Var26", "Var27", "Var28", "Var29", "Var30", "Var31", "Var32", "Var33", "Var34", "Var35", "Final1", "Equation_DoNotEdit_"];
+opts.SelectedVariableNames = ["Var1", "Var16", "x22", "x30", "x0", "x14", "Final1", "Equation_DoNotEdit_"];
+opts.VariableTypes = ["string", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "double", "categorical", "categorical", "char", "categorical", "categorical", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "char", "categorical", "double"];
+
+% Specify variable properties
+opts = setvaropts(opts, ["Var1", "Var2", "Var3", "Var4", "Var5", "Var6", "Var7", "Var8", "Var9", "Var10", "Var11", "Var12", "Var13", "Var14", "Var15", "Var19", "Var22", "Var23", "Var24", "Var25", "Var26", "Var27", "Var28", "Var29", "Var30", "Var31", "Var32", "Var33", "Var34", "Var35"], "WhitespaceRule", "preserve");
+opts = setvaropts(opts, ["Var1", "Var2", "Var3", "Var4", "Var5", "Var6", "Var7", "Var8", "Var9", "Var10", "Var11", "Var12", "Var13", "Var14", "Var15", "x22", "x30", "Var19", "x0", "x14", "Var22", "Var23", "Var24", "Var25", "Var26", "Var27", "Var28", "Var29", "Var30", "Var31", "Var32", "Var33", "Var34", "Var35", "Final1"], "EmptyFieldRule", "auto");
+
+% Import the data
+demog = readtable("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/TNT_AllData_2025-10-31.xlsx", opts, "UseExcel", false);
+
+
+%% clean up the import
+% naming
+demog = renamevars(demog, "Var1", "subject");
+demog = renamevars(demog, "x0", "ethnicityHispanic");
+demog = renamevars(demog, "x14", "veteran");
+demog = renamevars(demog, "Final1", "typeStroke");
+demog = renamevars(demog, "Equation_DoNotEdit_", "timeSinceStrokeMonth");
+demog = renamevars(demog, "Var16", "age");
+demog = renamevars(demog, "x22", "sex");
+demog = renamevars(demog, "x30", "race");
+demog(1,:) = []; % remove first row - not data
+demog.timeSinceStrokeMonth(62:86) = 0;demog.typeStroke(62:86) = '<undefined>';...
+    demog.veteran(62:86) = '<undefined>';demog.ethnicityHispanic(62:86) = '<undefined>';...
+    demog.race(62:86) = '<undefined>';demog.sex(62:86) = '<undefined>';demog.age(62:86) = 0;
+matchedIndices = false(1,7); matchedIndices(1:7) = true;
+demog(62:end,:) = [];
+
 %%
 % fix naming convention (again)
 BBT_NHPT_data.subject = regexprep(BBT_NHPT_data.subject, '^TNT_0+', 'TNT'); 
@@ -143,7 +181,8 @@ end
 % actual joining of two tables - NHPT/BBT with WMFT, ARAT
 clinicalData = join(clinicalData, BBT_NHPT_data); 
 
-%% do some checks. NHPT NaN's. have to work around since no NaN is 
+%% do some checks. 
+% NHPT NaN's. have to work around since no NaN in matlab is 
 % considered the same.
 if ~all(isnan(clinicalData.NHPTafffected) == isnan(BBT_NHPT_data.NHPTafffected)) == 1
     disp('ERROR: NHPT NaNs are not the same. something is weird. check and correct')
@@ -153,7 +192,7 @@ end
 % index the NaN's. find not NaN's. confirm non-NaN's are the same.
 a = ~isnan(clinicalData.NHPTafffected); % not NaN's
 b = ~isnan(BBT_NHPT_data.NHPTafffected);
-noNaNa = clinicalData.NHPTafffected(a); % ID the values that aren't NaN
+noNaNa = clinicalData.NHPTafffected(a); % ID values not NaN
 noNaNb = BBT_NHPT_data.NHPTafffected(b);
 
 if ~isequal(noNaNa,noNaNb) % compare these values with each other.
@@ -163,8 +202,7 @@ end
 
 % aaaand same for bbt
 
-% do some checks. BBT NaN's. have to work around since no NaN is 
-% considered the same. therefore, isequal wouldnt work immediately.
+% do some checks. BBT NaN's.
 if ~all(isnan(clinicalData.BBTaffected) == isnan(BBT_NHPT_data.BBTaffected)) == 1
     disp('ERROR: BBT NaNs are not the same. something is weird. check and correct')
     return 
