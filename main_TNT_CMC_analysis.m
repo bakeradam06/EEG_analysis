@@ -463,27 +463,31 @@ allCMC2.session(preIdx) = "Baseline";
 allCMC2.session(postIdx) = "Post 1";
 allCMC2.session(fuIdx) = "FU 1";
 
-%% disregard the open incldue trial. i'm only looking at pinch for now
+% disregard the open incldue trial. i'm only looking at pinch for now
 allCMC = removevars(allCMC, "openIncludeTrial");
 allCMC2 = removevars(allCMC2, "openIncludeTrial");
 
-%% save so i don't have to keep runnning this code above
+%% save the CMC data so i don't have to keep runnning this code above
 writetable(allCMC,'allCMC.txt')
 writetable(allCMC2,'allCMC2.txt')
+writetable(clinicalData,'clinicalData.txt')
+writetable(clinicalData_short,'clinicalData_short.txt')
+
+% uncomment if you want to load from here:
+% allCMC2 = readtable("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/allCMC2.txt");
+% clinicalData_short = readtable("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/clinicalData_short.txt");
 
 %% compress clinicalData to only pre post FU
 sessions_short = {'Baseline','Post 1','FU 1'};
 shortIdx = contains(clinicalData.session, sessions_short);
-
 clinicalData_short = clinicalData(shortIdx,:);
-
 clear sessions_short shortIdx
 
 %% combine allCMC with clinicalData
 allData = outerjoin(allCMC2, clinicalData_short,'Keys',{'Subject','session'},'MergeKeys',true);
 
-% save 
-writetable(allData,'allDataForAnalyze.txt')
+%% save 
+writetable(allData,'allDataForAnalyzeTNT.txt')
     
 %% clear more vars
 clear cmcBetaExeNV_APB cmcBetaExeNV_EDC cmcBetaExeNV_FDI cmcBetaExeNV_FDS cmcBetaExeV_APB cmcBetaExeV_EDC ...
@@ -492,12 +496,13 @@ clear cmcBetaExeNV_APB cmcBetaExeNV_EDC cmcBetaExeNV_FDI cmcBetaExeNV_FDS cmcBet
     cmcGammaExeNV_FDI cmcGammaExeNV_FDS cmcGammaExeV_APB cmcGammaExeV_EDC cmcGammaExeV_FDI cmcGammaExeV_FDS ...
     cmcGammaPrepNV_APB cmcGammaPrepNV_EDC cmcGammaPrepNV_FDI cmcGammaPrepNV_FDS cmcGammaPrepV_APB ...
     cmcGammaPrepV_EDC cmcGammaPrepV_FDI cmcGammaPrepV_FDS cond currentTable parts tableDir tableNames ...
-    currentName currentExcelFile currentPt main i muscle band phase basePath
-
+    currentName currentExcelFile currentPt main i muscle band phase basePath excelFileNames preIdx postIdx fuIdx allPtID allCMC ...
+    allCMC2 clinicalData
+    
 %% start plotting
-
-% note: careful if running this from something other than MATLAB 2025b with dark mode. i originally wrote this script with dark mode, so the figs
-% below only show up with dark background, as is present in 2025b on my machine.
+% note: careful if running this from something other than MATLAB 2025b with dark mode. 
+% i originally wrote this script with dark mode, so the figs below only show up with dark 
+% background, as is present in 2025b on my machine.
 
 % get subject list from allCMC
 subjects = unique(allCMC.Subject);
@@ -609,15 +614,6 @@ for iSubj=1:numel(subjects) % for all subjects
         close(fig);
     end
 end
-
-%% Save allCMC data as csv, txt, mat. 
-% should be saved in the "TNTanalysis" folder
-
-writetable(allCMC,'cmcDataTNT.csv')
-writetable(allCMC2,'cmcDataTNT2.csv')
-
-writetable(allCMC,'cmcDataTNT.txt')
-writetable(allCMC2,'cmcDataTNT2.txt')
 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
