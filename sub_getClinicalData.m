@@ -4,6 +4,8 @@
 % output: one table that contains all clinical data (WFMT, ARAT, FMA, BBT). 
 % long format to enable statsitics, merge with ccc and cmc data later.
 
+% last update: 11/14/25. add demog data import
+
 function [clinicalData] = sub_getClinicalData 
 
 % create list of sheets to cycle though
@@ -107,7 +109,7 @@ opts = setvaropts(opts, ["Var1", "Var2", "Var3", "Var4", "Var5", "Var6", "Var7",
 % Import the data
 demog = readtable("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/TNT_AllData_2025-10-31.xlsx", opts, "UseExcel", false);
 
-
+clear opts
 %% clean up the import
 % naming
 demog = renamevars(demog, "Var1", "subject");
@@ -125,14 +127,27 @@ demog.timeSinceStrokeMonth(62:86) = 0;demog.typeStroke(62:86) = '<undefined>';..
 matchedIndices = false(1,7); matchedIndices(1:7) = true;
 demog(62:end,:) = [];
 
+clear matchedIndices
 %%
-% fix naming convention (again)
-BBT_NHPT_data.subject = regexprep(BBT_NHPT_data.subject, '^TNT_0+', 'TNT'); 
-d = strlength(BBT_NHPT_data.subject) == 4;
-BBT_NHPT_data.subject(d) = regexprep(BBT_NHPT_data.subject(d),'^TNT(\d)$','TNT0$1');
-BBT_NHPT_data.subject = string(BBT_NHPT_data.subject);
+% fix naming convention for what i just imported
+tables = {BBT_NHPT_data, demog};
 
-clear opts sheet sheetNames
+for i = 1:length(tables)
+    tempTable = tables{i};
+    tempTable.subject = regexprep(tempTable.subject, '^TNT_0+', 'TNT'); 
+    d = strlength(tempTable.subject) == 4;
+    tempTable.subject(d) = regexprep(tempTable.subject(d),'^TNT(\d)$','TNT0$1');
+    tempTable.subject = string(tempTable.subject);
+    if i == 1
+        tables{1} = tempTable;
+    elseif i == 2
+        tables{2} = tempTable;
+    end
+end
+BBT_NHPT_data = tables{1};
+demog = tables{2};
+
+clear opts sheet sheetNames i tempTable d tables
 
 %% get rid of phone call rows. don't want them at all.
 
