@@ -621,6 +621,3 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % see step11 script for analyzing CMC data for outcomes.
-
-
-

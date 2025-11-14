@@ -10,9 +10,10 @@
 
 %% load txt dataset from data wrangling script
 
-allData = readtable("allDataForAnalyze.txt");
+allData = readtable("allDataForAnalyzeTNT.txt");
 
-%% explore data
+%% first lme model
 
-figure
-scatter(allData.Coh, allData.WMFTavgHand);
+lme = fitlme(allData, "WMFTavgTime ~ Coh*BrainRegion*Band + age + Muscle + " + ...
+    "sex + race + ethnicityHispanic + typeStroke + timeSinceStrokeMonth + group" + ...
+    ('Coh' | 'session'))
