@@ -27,10 +27,12 @@ summryBig = groupsummary(allData,grpingVars,'Mean','Coh'); % get summry accrding
 % smaller grouped dataset
 grpingVars2 = ["session","Phase","BrainRegion","Muscle","Band"]; % removed condiiton for now
 summry2= groupsummary(allData,grpingVars2,'Mean','Coh');
-% 3*2*8*4*2*2 = 384 rows
+% 3*2*8*4*2 = 384 rows. Using these data would be avging NoVib and Vib together
 
-%% use these data for plotting and such
+%% begin plotting
 
+groups = findgroups(summry2.BrainRegion, summry2.Muscle);
+splitapply(@(x) plot(x), summry2.mean_Coh, groups) 
 
 %% first lme model
 
