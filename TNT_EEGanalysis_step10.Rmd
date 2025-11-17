@@ -14,7 +14,7 @@ library(tidyr) # for data tidying
 library(Hmisc)
 # import CSV file with subject IDs and analyze CMC over time, as well as beta vs gamma, muscle, brain region, etc
 # set working directory to folder with all step9 excel files
-cmcData.df <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/allDataForAnalyze.txt")
+cmcData.df <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/allDataForAnalyzeTNT.txt")
 ```
 
 ```{r}
@@ -213,15 +213,15 @@ lapply(libs, require, character.only = TRUE)
 
 ```{r}
 model1 <- lmer(WFMTavgTime ~ 
-                (BrainRegion*Muscle*Coh) + session +
+                (BrainRegion*Muscle*Coh*Band) + session + group +
                 (Coh | session),
-                data = dplyr::sample_frac(cmcData.df, 0.2)
+                data = dplyr::sample_frac(cmcData.df, 0.3)
                )
 
 model12 <- lmer(WFMTavgTime ~ 
                 (BrainRegion*Muscle*Coh) + session +
                 (Subject | session),
-                data = dplyr::sample_frac(cmcData.df, 0.2)
+                data = dplyr::sample_frac(cmcData.df, 0.3)
                )
 
 # Anova(model1, type = 'III')
@@ -231,16 +231,14 @@ model12 <- lmer(WFMTavgTime ~
 model2 <- lmer(ARATscore ~ 
                 (BrainRegion*Muscle*Coh) + session +
                 (Coh | session),
-                data = dplyr::sample_frac(cmcData.df, 0.2)
+                data = dplyr::sample_frac(cmcData.df, 0.3
                )
 model21 <- lmer(ARATscore ~ 
                 (BrainRegion*Muscle*Coh) + session +
                 (Subject | session),
-                data = dplyr::sample_frac(cmcData.df, 0.2)
+                data = dplyr::sample_frac(cmcData.df, 0.3)
                )
 # Anova(model2, type = 'III')
-
-
 
 ```
 

@@ -501,8 +501,8 @@ clear cmcBetaExeNV_APB cmcBetaExeNV_EDC cmcBetaExeNV_FDI cmcBetaExeNV_FDS cmcBet
     
 %% start plotting
 % note: careful if running this from something other than MATLAB 2025b with dark mode. 
-% i originally wrote this script with dark mode, so the figs below only show up with dark 
-% background, as is present in 2025b on my machine.
+% i originally wrote this script with the dark mode, so the figs below only show up with dark 
+% background, as is present in 2025b on my machine. it may/will be blank if you run it with white background.
 
 % get subject list from allCMC
 subjects = unique(allCMC.Subject);
