@@ -18,13 +18,30 @@ allData = readtable("allDataForAnalyzeTNT.txt");
 
 allData(isnan(allData.pinchIncludeTrial), :) = [];
 
-%% initial plotting
+%% get grp summaries
 
-grpingVars = ["session","Phase","BrainRegion","Muscle","Band","Condition"]; %note to self, needs to be string
-summryBig = groupsummary(allData, grpingVars,'Mean','Coh'); % get summry accrding to above
+grpingVars = ["session","Phase","BrainRegion","Muscle","Band","Condition"]; % note to self, needs to be string
+summryBig = groupsummary(allData,grpingVars,'Mean','Coh'); % get summry accrding to above
 % returns 768 rows, as 3*2*8*4*2*2 = 768
+
+% smaller grouped dataset
+grpingVars2 = ["session","Phase","BrainRegion","Muscle","Band"]; % removed condiiton for now
+summry2= groupsummary(allData,grpingVars2,'Mean','Coh');
+% 3*2*8*4*2*2 = 384 rows
+
+%% use these data for plotting and such
+
 
 %% first lme model
 
+% generate subsample of data
+heightA = height(allData);
+subsetIdx = logical(randi([0,1],heightA,1));
+
+allData_subset = allData(subsetIdx,:);
+
+
+
+%%
 form = fitlme(allData, "WFMTavgTime ~ Coh + session + (Subject | session)");
 lme = fitlme(allData, form)
