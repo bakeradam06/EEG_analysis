@@ -57,30 +57,11 @@ ggplot(distinct(allData.df, Subject, .keep_all = TRUE),
     y = "Number of Subjects"
   )
 ```
-######################################################
-### Histogram of the Pre CMC data across all subjects, according to connection
-######################################################
-```{r}
-# Pre, NoVib, Beta, Prep
-# first is PML (lesioned premotor cortex, PM)
-ggplot(
-    filter(allData.df, timePoint == "Pre" & Condition == "NoVib" & Band == "Beta" & Phase == "Prep"), 
-    aes(x = PML, fill = Muscle)
- ) +
-    geom_histogram(binwidth = 0.01, position = "dodge") +
-    labs(
-        title = "Distribution of CMC values at Pre, NoVib, Beta, Prep",
-        x = "CMC value",
-        y = "count"
-    )
-# still looks pretty normally distributed..
-```
-
 Boxplots 
 
 ```{r}
 # by timepoint and frequency band, interested in PML
-ggplot(cmc_data_full, aes(x = timePoint, y = PML, fill = Band)) +
+ggplot(allData.df, aes(x = session, y = BrainRegion, fill = Band)) +
     geom_boxplot() +
     theme_minimal() +
     labs(
@@ -115,6 +96,12 @@ ggplot(cmcData.df, aes(x = timePoint, y = PML, color = Band)) +
   geom_violin()
 
 ```
+Add new variable that notes the connection, so don't have to add Muscle & BrainRegion to modeling.
+```{r}
+allData.df <- allData.df %>%
+  mutate(connection = factor(paste0(BrainRegion, '-', Muscle)))
+```
+
 
 LMM, CMC over all subjects, according to connection
 ```{r}
@@ -127,16 +114,26 @@ lapply(libs, require, character.only = TRUE)
 
 ```{r}
 model1 <- lmer(WFMTavgTime ~ 
-                (BrainRegion*Muscle*Coh*Band) + session + group +
+                (BrainRegion*Muscle*Coh*Band*Condition*Phase) + 
+                session + 
+                group + 
+                typeStroke + 
+                timeSinceStrokeMonth + 
+                age + 
+                sex + 
                 (Coh | session),
-                data = dplyr::sample_frac(cmcData.df, 0.3)
-               )
+                data = dplyr::sample_frac(allData.df, 0.3)
+                )
+
+Anova(model1, type = 'III')
+model_parameters(model1)
+
 
 model12 <- lmer(WFMTavgTime ~ 
                 (BrainRegion*Muscle*Coh) + session +
                 (Subject | session),
-                data = dplyr::sample_frac(cmcData.df, 0.3)
-               )
+                data = dplyr::sample_frac(allData.df, 0.3)
+                )
 
 # Anova(model1, type = 'III')
 # anova(model1, model12)
@@ -145,12 +142,12 @@ model12 <- lmer(WFMTavgTime ~
 model2 <- lmer(ARATscore ~ 
                 (BrainRegion*Muscle*Coh) + session +
                 (Coh | session),
-                data = dplyr::sample_frac(cmcData.df, 0.3
+                data = dplyr::sample_frac(allData.df, 0.3
                )
 model21 <- lmer(ARATscore ~ 
                 (BrainRegion*Muscle*Coh) + session +
                 (Subject | session),
-                data = dplyr::sample_frac(cmcData.df, 0.3)
+                data = dplyr::sample_frac(allData.df, 0.3)
                )
 # Anova(model2, type = 'III')
 
