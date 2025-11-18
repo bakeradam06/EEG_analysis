@@ -74,8 +74,25 @@ dWMFTpreFU <- allData.df %>%
   mutate(dWFMTpreFU = `FU 1` - `Baseline`)
 
 allData.df$dWFMTpreFU <- allData.df$WFMTavgTime["FU"] - allData.df$WFMTavgTime["Pre"] 
+```
+```{r - "How does CMC of PML-APB associate with baseline WMFT score during prep phase before grip?"}
+# needs: 
+  # baseline WMFT, CMC scores of prep phase, no execution phase here
+  # keep beta, gamma, novib. Don't include Vib in this. 
 
+# exclude data i want now (see above)
+
+analysis1.df <- 
+
+
+allData.df %>%
+  filter(Phase == "Prep", Condition == "NoVib") %>%
+  ggplot(aes(x = WFMTavgTime, y = Coh, group_by = Subject)) +
+  geom_point()
+   
   
+
+
 ```
 
 
