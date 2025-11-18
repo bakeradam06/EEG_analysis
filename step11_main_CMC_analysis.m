@@ -29,10 +29,29 @@ grpingVars2 = ["session","Phase","BrainRegion","Muscle","Band"]; % removed condi
 summry2= groupsummary(allData,grpingVars2,'Mean','Coh');
 % 3*2*8*4*2 = 384 rows. Using these data would be avging NoVib and Vib together
 
+
+%% add another variable that notes the brain region-muscle pair - "connection"
+
+tables = {summryBig, summry2};
+for i=1:length(tables)
+    tempTable = tables{i};
+    tempTable.connection = categorical(strcat(tempTable.BrainRegion,'-',tempTable.Muscle));
+    tables{i} = tempTable;
+end
+
+summryBig = tables{1};
+summry2 = tables{2};
+
 %% begin plotting
 
 groups = findgroups(summry2.BrainRegion, summry2.Muscle);
 splitapply(@(x) plot(x), summry2.mean_Coh, groups) 
+
+
+
+
+
+
 
 %% first lme model
 
@@ -41,7 +60,6 @@ heightA = height(allData);
 subsetIdx = logical(randi([0,1],heightA,1));
 
 allData_subset = allData(subsetIdx,:);
-
 
 
 %%
