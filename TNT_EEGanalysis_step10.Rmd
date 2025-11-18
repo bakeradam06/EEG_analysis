@@ -58,16 +58,29 @@ ggplot(distinct(allData.df, Subject, .keep_all = TRUE),
   )
 ```
 
-Add new variable that notes the connection, so don't have to add Muscle & BrainRegion to modeling.
+Add new variables: 
+One that notes the connection, so don't have to add Muscle & BrainRegion to modeling.
+Another few that note changes from pre to post in Coh, WMFTtime, as well as pre to FU. 
 ```{r}
 allData.df <- allData.df %>%
   mutate(connection = factor(paste0(BrainRegion, '-', Muscle)))
+
+# change scores - BNOT WORKING NEED TO KEEEP DOING
+dWMFTpreFU <- allData.df %>%
+  filter(session %in% c(`Baseline`, `FU 1`), !is.na(WFMTavgTime)) %>%
+  group_by(Subject) %>%
+  filter(n_distinct(session) == 2) %>%
+  pivot_wider(names_from = session, values_from = WFMTavgTime) %>%
+  mutate(dWFMTpreFU = `FU 1` - `Baseline`)
+
+allData.df$dWFMTpreFU <- allData.df$WFMTavgTime["FU"] - allData.df$WFMTavgTime["Pre"] 
+
+  
 ```
 
 
-```{r}
-
-
+```{r - first model. looking at PML-APB connection for explaining motor recovery}
+# question: does connection PML connectivity during grip preparation (-2 to 0s before grip) significantly help explain motor recovery? 
 
 ```
 
