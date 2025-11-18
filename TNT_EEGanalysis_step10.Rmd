@@ -57,45 +57,7 @@ ggplot(distinct(allData.df, Subject, .keep_all = TRUE),
     y = "Number of Subjects"
   )
 ```
-Boxplots 
 
-```{r}
-# by timepoint and frequency band, interested in PML
-ggplot(allData.df, aes(x = session, y = BrainRegion, fill = Band)) +
-    geom_boxplot() +
-    theme_minimal() +
-    labs(
-        title = "CMC by Time Point and Frequency Band",
-        x = "Time Point",
-        y = "CMC - PML"
-    ) +
-    facet_wrap(~Muscle)
-
-##############################
-########## Violins ###########
-##############################
-
-p <- ggplot(ToothGrowth, aes(x=dose, y=len)) + 
-  geom_violin(trim=FALSE)
-p + stat_summary(fun.data="mean_sdl", mult=, 
-                 geom="crossbar", width=0.2 )
-p + stat_summary(fun.data=mean_sdl, mult=1, 
-                 geom="pointrange", color="red")
-
-# M1L - by timePoint and Frequency
-p <- ggplot(cmcData.df, aes(x = timePoint, y = M1L, color = Band)) +
-  geom_violin(trim = FALSE)
-p + stat_summary(fun.data="mean_sdl",mult=2,
-                 geom="crossbar",width=2)
-p + stat_summary(fun.data=mean_sdl, mult=2, 
-                 geom="pointrange", color="red")
-
-  
-# PML - by timePoint and Frequency
-ggplot(cmcData.df, aes(x = timePoint, y = PML, color = Band)) + 
-  geom_violin()
-
-```
 Add new variable that notes the connection, so don't have to add Muscle & BrainRegion to modeling.
 ```{r}
 allData.df <- allData.df %>%
@@ -103,54 +65,11 @@ allData.df <- allData.df %>%
 ```
 
 
-LMM, CMC over all subjects, according to connection
 ```{r}
-# load libs for it
-libs <- c('lme4', 'lmerTest', 'performance','dplyr', 'car',
-          'sjPlot','parameters','easystats') # needed if loading data in and not starting at top of script.
-lapply(libs, require, character.only = TRUE)  
+
+
 
 ```
 
-```{r}
-model1 <- lmer(WFMTavgTime ~ 
-                (BrainRegion*Muscle*Coh*Band*Condition*Phase) + 
-                session + 
-                group + 
-                typeStroke + 
-                timeSinceStrokeMonth + 
-                age + 
-                sex + 
-                (Coh | session),
-                data = dplyr::sample_frac(allData.df, 0.3)
-                )
-
-Anova(model1, type = 'III')
-model_parameters(model1)
-
-
-model12 <- lmer(WFMTavgTime ~ 
-                (BrainRegion*Muscle*Coh) + session +
-                (Subject | session),
-                data = dplyr::sample_frac(allData.df, 0.3)
-                )
-
-# Anova(model1, type = 'III')
-# anova(model1, model12)
-
-
-model2 <- lmer(ARATscore ~ 
-                (BrainRegion*Muscle*Coh) + session +
-                (Coh | session),
-                data = dplyr::sample_frac(allData.df, 0.3
-               )
-model21 <- lmer(ARATscore ~ 
-                (BrainRegion*Muscle*Coh) + session +
-                (Subject | session),
-                data = dplyr::sample_frac(allData.df, 0.3)
-               )
-# Anova(model2, type = 'III')
-
-```
 
 
