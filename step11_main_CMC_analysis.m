@@ -42,6 +42,8 @@ end
 summryBig = tables{1};
 summry2 = tables{2};
 
+clear i tempTable tables
+
 %% begin plotting
 summry2.session = categorical(summry2.session);
 
