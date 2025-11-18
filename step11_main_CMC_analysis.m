@@ -43,7 +43,14 @@ summryBig = tables{1};
 summry2 = tables{2};
 
 %% begin plotting
+summry2.session = categorical(summry2.session);
 
+% plot over time, two diffrent plots (subplot) separated by freq band. 
+subset = summry2(string(summry2.Phase) == "Exe",:);
+
+figure
+
+%%
 groups = findgroups(summry2.BrainRegion, summry2.Muscle);
 splitapply(@(x) plot(x), summry2.mean_Coh, groups) 
 
