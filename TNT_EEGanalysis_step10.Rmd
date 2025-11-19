@@ -75,14 +75,29 @@ dWMFTpreFU <- allData.df %>%
 
 allData.df$dWFMTpreFU <- allData.df$WFMTavgTime["FU"] - allData.df$WFMTavgTime["Pre"] 
 ```
-```{r - "How does CMC of PML-APB associate with baseline WMFT score during prep phase before grip?"}
+```{r - "How does CMC of PML-APB associate with baseline WMFT score during prep of grip?"}
 # needs: 
   # baseline WMFT, CMC scores of prep phase, no execution phase here
-  # keep beta, gamma, novib. Don't include Vib in this. 
+  # keep beta, gamma, novib. Don't include Vib in this. Baseline only.
 
-# exclude data i want now (see above)
+# exclude data i don't want (see above)
+analysis1.df <- allData.df %>%
+  filter(session == "Baseline", 
+         Phase == "Prep", 
+         Condition == "NoVib",
+         BrainRegion == "PML") %>%
+  group_by(Subject, connection) %>%
+  summarise(meanCoh = mean(Coh), meanWMFT = mean(WFMTavgTime))
 
-analysis1.df <- 
+
+test1.df <- analysis1.df %>%
+  filter(connection == "PML-APB")
+
+model1 <- lm(meanWMFT ~ meanCoh,
+   data = test1.df)
+Anova(model1, type = 'III')
+
+plot(test1.df$meanCoh, test1.df$meanWMFT)
 
 
 allData.df %>%
