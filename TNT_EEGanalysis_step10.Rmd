@@ -15,11 +15,28 @@ library(Hmisc)
 # import CSV file with subject IDs and analyze CMC over time, as well as beta vs gamma, muscle, brain region, etc
 # set working directory to folder with all step9 excel files
 allData.df <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/allDataForAnalyzeTNT.txt")
+
+
+# add new variable ("connection")
+allData.df <- allData.df %>%
+  mutate(connection = factor(paste0(BrainRegion, '-', Muscle)))
+# basic descriptives of allData.df
+summary(allData.df)
+describe(allData.df)
+# check for missing values
+missing_values <- sapply(allData.df, function(x) sum(is.na(x)))
+print(missing_values)
+# some missing data known just because CMC data not in these data for specific subjects yet,
+# but we have WMFT. Let's get rid of those.
+allData.df <- allData.df%>%
+  filter(!is.na(pinchIncludeTrial)) # filter out the na rows
+# check
+x = is.na(allData.df)
+sum(is.na(x)) # should return 0
+
 ```
 
 ```{r}
-## sanity check to assess if the import in matlab was done correctly
-
 # first, check how many rows there are per subject
 summary_by_subject <- allData.df %>%
     group_by(Subject) %>%
@@ -34,19 +51,10 @@ ggplot(summary_by_subject, aes(x = Subject, y = n_rows)) +
         x = "Subject",
         y = "Number of Rows"
     )
+
+rm(summary_by_subject)
 ```
-################################################
-########### descriptive statistics #############
-################################################
 ```{r}
-# basic descriptives of cmc_data_full
-summary(allData.df)
-describe(allData.df)
-
-# check for missing values
-missing_values <- sapply(allData.df, function(x) sum(is.na(x)))
-print(missing_values)
-
 # WMFT
 ggplot(distinct(allData.df, Subject, .keep_all = TRUE), 
        aes(x = `WFMTavgTime`)) + 
@@ -62,9 +70,8 @@ Add new variables:
 One that notes the connection, so don't have to add Muscle & BrainRegion to modeling.
 Another few that note changes from pre to post in Coh, WMFTtime, as well as pre to FU. 
 ```{r}
-allData.df <- allData.df %>%
-  mutate(connection = factor(paste0(BrainRegion, '-', Muscle)))
 
+########################
 # change scores - BNOT WORKING NEED TO KEEEP DOING
 dWMFTpreFU <- allData.df %>%
   filter(session %in% c(`Baseline`, `FU 1`), !is.na(WFMTavgTime)) %>%
@@ -74,7 +81,12 @@ dWMFTpreFU <- allData.df %>%
   mutate(dWFMTpreFU = `FU 1` - `Baseline`)
 
 allData.df$dWFMTpreFU <- allData.df$WFMTavgTime["FU"] - allData.df$WFMTavgTime["Pre"] 
+
+
+##################
 ```
+
+
 ```{r - "How does CMC of PML-APB associate with baseline WMFT score during prep of grip?"}
 # needs: 
   # baseline WMFT, CMC scores of prep phase, no execution phase here
@@ -104,7 +116,7 @@ test1.df <- analysis1.df %>%
             .groups = "drop"
             )
 
-model1 <- lm(meanWMFT ~ meanCoh + group + timeSinceStrokeMonth,
+model1 <- glm(meanWMFT ~ meanCoh + group + timeSinceStrokeMonth,
       data = test1.df)
 Anova(model1, type = 'III')
 model_parameters(model1)
