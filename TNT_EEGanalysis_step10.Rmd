@@ -90,7 +90,7 @@ analysis1.df <- allData.df %>%
          )
 
 test1.df <- analysis1.df %>%
-  filter(connection %in% c("PML-APB", "PML-EDC")) %>%
+  filter(connection %in% c("PML-APB", "PML-EDC", "PML-FDS","PML-FDI")) %>%
   group_by(Subject, connection) %>%
   summarise(meanCoh = mean(Coh), 
             meanWMFT = mean(WFMTavgTime),
@@ -104,10 +104,10 @@ test1.df <- analysis1.df %>%
             .groups = "drop"
             )
 
-
 model1 <- lm(meanWMFT ~ meanCoh + group + timeSinceStrokeMonth,
       data = test1.df)
 Anova(model1, type = 'III')
+model_parameters(model1)
 plot(test1.df$meanCoh, test1.df$meanWMFT)
 ```
 ```{r}
