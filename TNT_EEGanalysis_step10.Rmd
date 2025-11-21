@@ -16,10 +16,12 @@ library(Hmisc)
 # set working directory to folder with all step9 excel files
 allData.df <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/allDataForAnalyzeTNT.txt")
 
-
-# add new variable ("connection")
+# add new variable ("connection") by pairing together the BrainRegion and Muscle
 allData.df <- allData.df %>%
   mutate(connection = factor(paste0(BrainRegion, '-', Muscle)))
+# make subject and session factors
+allData.df$Subject <- factor(allData.df$Subject)
+allData.df$session <- factor(allData.df$session)
 # basic descriptives of allData.df
 summary(allData.df)
 describe(allData.df)
@@ -54,25 +56,11 @@ ggplot(summary_by_subject, aes(x = Subject, y = n_rows)) +
 
 rm(summary_by_subject)
 ```
-```{r}
-# WMFT
-ggplot(distinct(allData.df, Subject, .keep_all = TRUE), 
-       aes(x = `WFMTavgTime`)) + 
-  geom_histogram(binwidth = 10) +
-  labs(
-    title = "Distribution of WMFT PRE Average Scores",
-    x = "WMFT PRE Average Score",
-    y = "Number of Subjects"
-  )
-```
 
-Add new variables: 
-One that notes the connection, so don't have to add Muscle & BrainRegion to modeling.
-Another few that note changes from pre to post in Coh, WMFTtime, as well as pre to FU. 
-```{r}
+```{r - calculating change scores}
 
 ########################
-# change scores - BNOT WORKING NEED TO KEEEP DOING
+# change scores - BNOT WORKING NEED TO KEEEP WORKINGG
 dWMFTpreFU <- allData.df %>%
   filter(session %in% c(`Baseline`, `FU 1`), !is.na(WFMTavgTime)) %>%
   group_by(Subject) %>%
@@ -80,7 +68,32 @@ dWMFTpreFU <- allData.df %>%
   pivot_wider(names_from = session, values_from = WFMTavgTime) %>%
   mutate(dWFMTpreFU = `FU 1` - `Baseline`)
 
-allData.df$dWFMTpreFU <- allData.df$WFMTavgTime["FU"] - allData.df$WFMTavgTime["Pre"] 
+varsToKeep <- c(
+  "Subject",
+  "session",
+  "ARATscore",
+  "WFMTavgTime",
+  "WMFTavgHand",
+  "connection",
+  "Coh",
+  "BBTaffected",
+  "NHPTafffected"
+)
+# remove the undesired vars
+clinicalDataTemp.df <- allData.df %>% select(all_of(varsToKeep))
+  
+  
+  
+  
+  
+  
+smallDataTemp <- allData.df %>%
+  filter()
+
+allData2.df <- pivot_wider(allData.df, names_from = c('Subject','session'), values_from = )
+allData2.df$dWFMTpreFU <- allData.df$WFMTavgTime["FU"] - allData.df$WFMTavgTime["Pre"] 
+
+
 
 
 ##################
@@ -102,7 +115,7 @@ analysis1.df <- allData.df %>%
          )
 
 test1.df <- analysis1.df %>%
-  filter(connection %in% c("PML-APB", "PML-EDC", "PML-FDS","PML-FDI")) %>%
+  filter(connection %in% c("PML-APB", "PML-EDC", "PML-FDS", "PML-FDI")) %>%
   group_by(Subject, connection) %>%
   summarise(meanCoh = mean(Coh), 
             meanWMFT = mean(WFMTavgTime),
@@ -116,17 +129,49 @@ test1.df <- analysis1.df %>%
             .groups = "drop"
             )
 
-model1 <- glm(meanWMFT ~ meanCoh + group + timeSinceStrokeMonth,
+model1 <- glm(log(meanWMFT) ~ meanCoh*connection + timeSinceStrokeMonth + age + sex + typeStroke,
       data = test1.df)
 Anova(model1, type = 'III')
 model_parameters(model1)
-plot(test1.df$meanCoh, test1.df$meanWMFT)
+
 ```
+ How does PML-APB CMC change over time in gamma during grip change predict?
 ```{r}
+
 test2.df <- allData.df %>%
-  
+  filter(Band == "Gamma", Phase == "Exe", BrainRegion == "PML")
+
+model2 <- lmer(log(WFMTavgTime) ~ 
+          # fixed effects
+          Coh*connection*session + 
+          timeSinceStrokeMonth + 
+          group + 
+          age + 
+          typeStroke +
+          # random effects
+          (session | Subject),
+          data = test2.df
+          )
 
 
+test3.df <- allData.df %>%
+  filter(Phase == "Exe", Band == "Gamma", BrainRegion == "M1L")
+
+model3_M1L <- lmer(log(WFMTavgTime) ~
+                     # fixed effects
+                     Coh + 
+                     session +
+                     group + 
+                     timeSinceStrokeMonth + 
+                     typeStroke + 
+                     age +
+                     # random effects
+                     (session | Subject),
+                     data = test3.df
+                     )
+Anova(model3_M1L, type = 'III')
+
+model_parameters(model3_M1L)
 ```
 
 ```{r - second model. looking at PML-APB connection for explaining motor recovery}
