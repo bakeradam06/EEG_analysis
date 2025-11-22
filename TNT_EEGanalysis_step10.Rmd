@@ -12,6 +12,7 @@ library(dplyr) # for data manipulation
 library(ggplot2) # for visualization
 library(tidyr) # for data tidying
 library(Hmisc)
+library(lme4)
 # import CSV file with subject IDs and analyze CMC over time, as well as beta vs gamma, muscle, brain region, etc
 # set working directory to folder with all step9 excel files
 allData.df <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/allDataForAnalyzeTNT.txt")
@@ -60,7 +61,7 @@ rm(summary_by_subject)
 ```{r - calculating change scores}
 
 ########################
-# change scores - BNOT WORKING NEED TO KEEEP WORKINGG
+# change scores - BNOT WORKING NEED TO KEEEP WORKINGG ON IT
 dWMFTpreFU <- allData.df %>%
   filter(session %in% c(`Baseline`, `FU 1`), !is.na(WFMTavgTime)) %>%
   group_by(Subject) %>%
@@ -68,54 +69,66 @@ dWMFTpreFU <- allData.df %>%
   pivot_wider(names_from = session, values_from = WFMTavgTime) %>%
   mutate(dWFMTpreFU = `FU 1` - `Baseline`)
 
-varsToKeep <- c(
+varsToKeep1 <- c(
   "Subject",
   "session",
   "ARATscore",
   "WFMTavgTime",
   "WMFTavgHand",
-  "connection",
-  "Coh",
   "BBTaffected",
   "NHPTafffected"
 )
+
+
+cohVarsToKeep <- c(
+  'Subject',
+  'session',
+  'Coh',
+  'connection',
+  'BrainRegion',
+  'Muscle'
+  )
 # remove the undesired vars
+cohDataTemp.df <- allData.df%>% select(all_of(cohVarsToKeep))
+cohDataTemp.df <- pivot_wider(cohDataTemp.df, 
+                              names_from = c('Subject','session','connection'), 
+                              values_from = 'Coh')
+
+
 clinicalDataTemp.df <- allData.df %>% select(all_of(varsToKeep))
-  
-  
-  
-  
-  
-  
-smallDataTemp <- allData.df %>%
-  filter()
+clinicalDataTemp.df <- pivot_wider(clinicalDataTemp.df, 
+                                   names_from = c('Subject', 'session','connection'), 
+                                   values_from = c('ARATscore',
+                                                   'WFMTavgTime',
+                                                   'WMFTavgHand',
+                                                   'Coh','BBTaffected',
+                                                   'NHPTafffected'))
+
 
 allData2.df <- pivot_wider(allData.df, names_from = c('Subject','session'), values_from = )
 allData2.df$dWFMTpreFU <- allData.df$WFMTavgTime["FU"] - allData.df$WFMTavgTime["Pre"] 
 
 
+# examine normality
+hist(unique(allData_baseline.df$WFMTavgTime),breaks=25) 
+qqnorm(unique(allData_baseline.df$WFMTavgTime)) # WMFT abnormally distriubuted
+hist(unique(allData_baseline.df$ARATscore)) 
+qqnorm(unique(allData_baseline.df$ARATscore)) # ARAT seems normal
 
 
+hist(unique(log(test2.df$ARATscore)),breaks=15)
+hist(unique(test2.df$ARATscore),breaks=15)
 ##################
 ```
 
 
-```{r - "How does CMC of PML-APB associate with baseline WMFT score during prep of grip?"}
+```{r - "How does CMC of PML-APB associate with baseline ARAT score during prep of grip?"}
 # needs: 
-  # baseline WMFT, CMC scores of prep phase, no execution phase here
-  # keep beta, gamma, novib. Don't include Vib in this. Baseline only.
+  # baseline ARAT, CMC scores of prep phase, no execution phase here
+  # keep beta, gamma, NoVib. Don't include Vib in this. Baseline only.
 
-# exclude data i don't want (see above)
-analysis1.df <- allData.df %>%
-  filter(session == "Baseline", 
-         Phase == "Prep", 
-         Condition == "NoVib",
-         BrainRegion == "PML",
-         Band == "Beta",
-         )
-
-test1.df <- analysis1.df %>%
-  filter(connection %in% c("PML-APB", "PML-EDC", "PML-FDS", "PML-FDI")) %>%
+test1.df <- allData.df %>%
+  filter(connection == "PML-APB", Band == "Beta", Phase == "Exe", Cond == "NoVib") %>%
   group_by(Subject, connection) %>%
   summarise(meanCoh = mean(Coh), 
             meanWMFT = mean(WFMTavgTime),
@@ -129,49 +142,88 @@ test1.df <- analysis1.df %>%
             .groups = "drop"
             )
 
-model1 <- glm(log(meanWMFT) ~ meanCoh*connection + timeSinceStrokeMonth + age + sex + typeStroke,
-      data = test1.df)
+model1 <- glm(ARATscore ~ 
+                meanCoh + 
+                timeSinceStrokeMonth,
+                data = test1.df)
+
 Anova(model1, type = 'III')
 model_parameters(model1)
+check_model(model1)
+
 
 ```
- How does PML-APB CMC change over time in gamma during grip change predict?
+ Does PML-APB CMC in gamma at baseline during grip associate with baseline ARAT score? I hypothesize it will.
 ```{r}
 
 test2.df <- allData.df %>%
-  filter(Band == "Gamma", Phase == "Exe", BrainRegion == "PML")
+  group_by(Subject) %>%
+  filter(Band == "Gamma", 
+         Phase == "Exe", 
+         connection == "PML-APB", 
+         session == "Baseline", 
+         Condition == "NoVib") %>%
+  summarise(meanCoh = mean(Coh),
+            ARATscore = first(ARATscore),
+            WFMTscore = first(WFMTavgTime),
+            timeSinceStrokeMonth = first(timeSinceStrokeMonth),
+            age = first(age),
+            typeStroke = first(typeStroke)) # get avg coh data for data specified above, 
+                                  # as well as pre ARAT & WMFT, TSS (no averaging for those).
 
-model2 <- lmer(log(WFMTavgTime) ~ 
-          # fixed effects
-          Coh*connection*session + 
-          timeSinceStrokeMonth + 
-          group + 
-          age + 
-          typeStroke +
-          # random effects
-          (session | Subject),
+# basic plotting before model
+test2.df %>%
+  ggplot(aes(x=meanCoh, y=ARATscore)) +
+  geom_point2() +
+  geom
+
+model2 <- glm(ARATscore ~
+          meanCoh + typeStroke,
           data = test2.df
           )
+# model residuals don't look as good with log(ARATscore) as raw ARAT.
 
+Anova(model2, type = 'III')
+check_model(model2)
+r2(model2)
+model_parameters(model2)
+check_heteroscedasticity(model2)
+check_residuals(model2)
+vif(model2)
+plot_model(model2)
 
+# r2 = 0.128. 
+# model residuals look pretty good. Check_residuals(model2) returns p=0.929, indicating normality in residuals
+# overall, not a very good model, but a starting point. Hypothesis not supported.
+```
+```{r}
 test3.df <- allData.df %>%
-  filter(Phase == "Exe", Band == "Gamma", BrainRegion == "M1L")
+  group_by(Subject) %>%
+  filter(Phase == "Exe", 
+         Band == "Gamma", 
+         BrainRegion == "M1L", 
+         Condition == "NoVib",
+         session == "Baseline") %>%
+  summarise(meanCoh = mean(Coh),
+            ARATscore = first(ARATscore),
+            WFMTscore = first(WFMTavgTime),
+            timeSinceStrokeMonth = first(timeSinceStrokeMonth),
+            age = first(age),
+            typeStroke = first(typeStroke))
+  
+model3 <- lm(ARATscore ~ 
+              meanCoh +
+              typeStroke,
+              data = test3.df
+              )
 
-model3_M1L <- lmer(log(WFMTavgTime) ~
-                     # fixed effects
-                     Coh + 
-                     session +
-                     group + 
-                     timeSinceStrokeMonth + 
-                     typeStroke + 
-                     age +
-                     # random effects
-                     (session | Subject),
-                     data = test3.df
-                     )
-Anova(model3_M1L, type = 'III')
+Anova(model3, type = 'III')
 
-model_parameters(model3_M1L)
+model_parameters(model3)
+check_residuals(model3)
+check_model(model3)
+
+plot_model(model3)
 ```
 
 ```{r - second model. looking at PML-APB connection for explaining motor recovery}
