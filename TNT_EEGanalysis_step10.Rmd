@@ -227,12 +227,119 @@ plot_model(model3)
 ```
 
 ```{r - second model. looking at PML-APB connection for explaining motor recovery}
-# question: does connection PML connectivity during grip preparation (-2 to 0s before grip) significantly help explain motor recovery? 
+# question: does connection PML connectivity during grip preparation (-2 to 0s before grip) significantly explain baseline motor fx? 
+# filter everything away that's not PML.. specify to gamma
 
+test4.df <- allData.df %>%
+  group_by(Subject, connection) %>%
+  filter(Phase == "Prep", 
+         Band == "Gamma", 
+         BrainRegion == "PML", 
+         Condition == "NoVib",
+         session == "Baseline") %>%
+  summarise(meanCoh = mean(Coh),
+            ARATscore = first(ARATscore),
+            WFMTscore = first(WFMTavgTime),
+            timeSinceStrokeMonth = first(timeSinceStrokeMonth),
+            age = first(age),
+            typeStroke = first(typeStroke))
+  
+model4 <- lm(ARATscore ~ 
+              meanCoh*connection +
+              typeStroke,
+              data = test4.df
+              )
+
+Anova(model4, type = 'III')
+
+model_parameters(model4)
+check_residuals(model4)
+check_model(model4)
+
+plot_model(model4)
+
+```
+Does PML-APB change in prep during gamma associate with motor recovery from rehab?
+```{r}
+# use lmer
+
+filt_pmlApbARAT.df <- allData.df %>%
+  filter(connection == "PML-FDI", 
+         Band == "Gamma", 
+         Condition == "NoVib",
+         Phase == "Prep")
+
+pmlApbRec <- lmer(ARATscore ~
+                  # fixed effects
+                  Coh*session +
+                  (1 | Subject),
+                  data = filt_pmlApbARAT.df
+                  )
+Anova(pmlApbRec,type = 'III')
+model_parameters((pmlApbRec))
+check_model(pmlApbRec)
+check_heteroscedasticity(pmlApbRec)
+check_collinearity(pmlApbRec)
+r2(pmlApbRec)
+
+
+```
+Second model, post-hoc: does M1L-APB in gamma during grip associate with motor reocvery?
+```{r}
+
+filt_m1lApbARAT.df <- allData.df %>%
+  filter(connection == "M1L-EDC", 
+         Band == "Beta", 
+         Condition == "NoVib",
+         Phase == "Exe")
+
+m1lApbRec <- lmer(ARATscore ~
+                  # fixed effects
+                  Coh*session +
+                  (1 | Subject),
+                  data = filt_m1lApbARAT.df
+                  )
+Anova(m1lApbRec,type = 'III')
+model_parameters((m1lApbRec))
+check_model(m1lApbRec)
+check_heteroscedasticity(m1lApbRec)
+check_collinearity(m1lApbRec)
+
+```
+aggregate data, model according to subject-level CMC data instead of trial-level
+```{r}
+groupDataLong.df <- allData.df %>%
+  group_by(Subject, session, connection, Band, Phase, Condition) %>%
+  summarise(meanCoh = mean(Coh),
+  ARATscore = first(ARATscore),
+  typeStroke = first(typeStroke),
+  timeSinceStrokeMonth = first(timeSinceStrokeMonth),
+  age = first(age),
+  group = first(group), 
+  .groups = "drop"
+  )
+# now have subject level cmc data according to condition and all the other stuff
+
+##### reassess pml-apb association with motor recovery now with group level cmc data
+
+m1lApbRec2.df <- groupDataLong.df %>%
+  filter(Condition == "NoVib", Band == "Gamma", Phase == "Prep", connection == "PML-APB")
+
+m1lApbRec2 <- lmer(ARATscore ~
+              # fixed effects
+              meanCoh*session +
+              (1 | Subject),
+              data = m1lApbRec2.df
+              )
+Anova(m1lApbRec2, type = 'III')
+model_parameters((m1lApbRec2))
+check_model(m1lApbRec2)
+check_heteroscedasticity(m1lApbRec2)
+check_collinearity(m1lApbRec2)
+r2(m1lApbRec2)
 
 
 
 ```
 
-
-
+ 
