@@ -321,23 +321,39 @@ r2(pmlApbRec)
 ```
 Second set of models. PML and motor recovery. same reserach question as above
 ```{r}
-pmlApbRec12 <- lmer(Coh ~
+
+filtPML.df <- allData.df %>%
+  filter(Condition == "NoVib",
+         Phase == "Exe")
+
+testBandMuscRegion <- lmer(Coh ~
                   # fixed effects
                   NHPTafffected +
                   BBTaffected + 
                   ARATscore +
-                  Muscle + BrainRegion +
+                  Muscle + 
+                  Band +
+                  BrainRegion +
                   (1 | Subject),
-                  data = filt_pmlApbARAT.df
+                  data = filtPML.df
                   )
-Anova(pmlApbRec12,type = 'III')
-model_parameters((pmlApbRec12))
+Anova(testBandMuscRegion, type = 'III')
+model_parameters((testBandMuscRegion))
 # check_model(pmlApbRec)
-check_heteroscedasticity(pmlApbRec12)
-check_collinearity(pmlApbRec12)
-r2(pmlApbRec12)
-report(pmlApbRec12)
+check_heteroscedasticity(testBandMuscRegion)
+check_collinearity(testBandMuscRegion)
+r2(testBandMuscRegion)
+# report(testBandMuscle)
 
+testBandMuscRegion_step <- step(testBandMuscRegion)
+finalBandMuscRegModel <- get_model(testBandMuscRegion_step)
+
+Anova(finalBandMuscRegModel, type = 'III')
+model_parameters((finalBandMuscRegModel))
+check_heteroscedasticity(finalBandMuscRegModel)
+check_collinearity(finalBandMuscRegModel)
+r2(finalBandMuscRegModel)
+check_model(finalBandMuscRegModel)
 
 ```
 
