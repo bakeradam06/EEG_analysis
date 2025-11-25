@@ -116,8 +116,8 @@ hist(unique(allData_baseline.df$ARATscore))
 qqnorm(unique(allData_baseline.df$ARATscore)) # ARAT seems normal
 
 
-hist(unique(log(test2.df$ARATscore)),breaks=15)
-hist(unique(test2.df$ARATscore),breaks=15)
+hist(unique(log(test2.df$ARATscore)),breaks=10)
+hist(unique(test2.df$ARATscore),breaks=10)
 ##################
 ```
 
@@ -264,24 +264,59 @@ Does PML-APB change in prep during gamma associate with motor recovery from reha
 # use lmer
 
 filt_pmlApbARAT.df <- allData.df %>%
-  filter(connection == "PML-FDI", 
-         Band == "Gamma", 
+  filter(Band == "Gamma", 
          Condition == "NoVib",
-         Phase == "Prep")
+         Phase == "Exe")
 
-pmlApbRec <- lmer(ARATscore ~
+pmlApbRec1<- lmer(Coh ~
                   # fixed effects
-                  Coh*session +
+                  NHPTafffected + 
+                  Muscle + BrainRegion +
+                  (1 | Subject),
+                  data = filt_pmlApbARAT.df
+                  )
+Anova(pmlApbRec1,type = 'III')
+model_parameters((pmlApbRec1))
+# check_model(pmlApbRec)
+check_heteroscedasticity(pmlApbRec1)
+check_collinearity(pmlApbRec1)
+r2(pmlApbRec1)
+
+#############
+pmlApbRec12 <- lmer(Coh ~
+                  # fixed effects
+                  NHPTafffected +
+                  BBTaffected + 
+                  ARATscore +
+                  Muscle + BrainRegion +
+                  (1 | Subject),
+                  data = filt_pmlApbARAT.df
+                  )
+Anova(pmlApbRec12,type = 'III')
+model_parameters((pmlApbRec12))
+# check_model(pmlApbRec)
+check_heteroscedasticity(pmlApbRec12)
+check_collinearity(pmlApbRec12)
+r2(pmlApbRec12)
+report(pmlApbRec12)
+
+
+
+
+
+
+pmlApbRec2 <- lmer(Coh ~
+                  # fixed effects
+                  ARATscore + 
+                  connection +
                   (1 | Subject),
                   data = filt_pmlApbARAT.df
                   )
 Anova(pmlApbRec,type = 'III')
 model_parameters((pmlApbRec))
-check_model(pmlApbRec)
 check_heteroscedasticity(pmlApbRec)
 check_collinearity(pmlApbRec)
 r2(pmlApbRec)
-
 
 ```
 Second model, post-hoc: does M1L-APB in gamma during grip associate with motor reocvery?
