@@ -319,6 +319,37 @@ check_collinearity(pmlApbRec)
 r2(pmlApbRec)
 
 ```
+Second set of models. PML and motor recovery. same reserach question as above
+```{r}
+pmlApbRec12 <- lmer(Coh ~
+                  # fixed effects
+                  NHPTafffected +
+                  BBTaffected + 
+                  ARATscore +
+                  Muscle + BrainRegion +
+                  (1 | Subject),
+                  data = filt_pmlApbARAT.df
+                  )
+Anova(pmlApbRec12,type = 'III')
+model_parameters((pmlApbRec12))
+# check_model(pmlApbRec)
+check_heteroscedasticity(pmlApbRec12)
+check_collinearity(pmlApbRec12)
+r2(pmlApbRec12)
+report(pmlApbRec12)
+
+
+```
+
+
+
+
+
+
+
+
+
+
 Second model, post-hoc: does M1L-APB in gamma during grip associate with motor reocvery?
 ```{r}
 
