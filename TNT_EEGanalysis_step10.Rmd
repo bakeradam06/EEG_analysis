@@ -323,15 +323,30 @@ Second set of models. PML and motor recovery. same reserach question as above
 ```{r}
 
 filtData2.df <- allData.df %>%
+  group_by(Subject,session) %>%
   filter(Condition == "NoVib",
-         Phase == "Exe")
+         Phase == "Exe",
+         BrainRegion %in% c('PML','M1L','SML','S1L'),
+         ) %>%
+    summarise(meanCoh = mean(Coh), .groups = 'drop')
 
-testBandMuscRegion_glm <- glm(Coh ~
+NHPTdistinct <- allData.df %>%
+  distinct(Subject, NHPTafffected, session)
+
+filtData2.df <- left_join(filtData2.df,
+                           NHPTdistinct %>% select(Subject, NHPTafffected),
+                           by = "Subject")
+
+
+
+
+testBandMuscRegion_glm <- glm(meanCoh ~
                   # fixed effects
                   NHPTafffected +
                   Band +
                   Muscle +
-                  BrainRegion,
+                  BrainRegion +
+                  session,
                   data = filtData2.df
                   )
 
@@ -349,11 +364,11 @@ testBandMuscRegion_lmer <- lmer(Coh ~
 anova(testBandMuscRegion_step,testBandMuscRegion_lmer)
 
 Anova(testBandMuscRegion_glm, type = 'III')
-Anova(testBandMuscRegion_lmer, type = 'III')
+# Anova(testBandMuscRegion_lmer, type = 'III')
 anova(testBandMuscRegion_glm)
 summary(testBandMuscRegion_glm)
 model_parameters(testBandMuscRegion_glm, ci_method = "wald")
-model_parameters(testBandMuscRegion_lmer, ci_method = "wald")
+# model_parameters(testBandMuscRegion_lmer, ci_method = "wald")
 # check_model(pmlApbRec)
 check_heteroscedasticity(testBandMuscRegion_glm)
 check_collinearity(testBandMuscRegion_glm)
