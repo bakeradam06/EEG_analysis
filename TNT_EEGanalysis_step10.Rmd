@@ -322,11 +322,50 @@ r2(pmlApbRec)
 Second set of models. PML and motor recovery. same reserach question as above
 ```{r}
 
-filtPML.df <- allData.df %>%
+filtData2.df <- allData.df %>%
   filter(Condition == "NoVib",
          Phase == "Exe")
 
-testBandMuscRegion <- lmer(Coh ~
+testBandMuscRegion_glm <- glm(Coh ~
+                  # fixed effects
+                  NHPTafffected +
+                  Band +
+                  Muscle +
+                  BrainRegion,
+                  data = filtData2.df
+                  )
+
+testBandMuscRegion_lmer <- lmer(Coh ~
+                  # fixed effects
+                  NHPTafffected +
+                  Band +
+                  Muscle +
+                  BrainRegion +
+                  # random effects 
+                  (1 | Subject),
+                  data = filtData2.df
+                  )
+
+anova(testBandMuscRegion_step,testBandMuscRegion_lmer)
+
+Anova(testBandMuscRegion_glm, type = 'III')
+Anova(testBandMuscRegion_lmer, type = 'III')
+anova(testBandMuscRegion_glm)
+summary(testBandMuscRegion_glm)
+model_parameters(testBandMuscRegion_glm, ci_method = "wald")
+model_parameters(testBandMuscRegion_lmer, ci_method = "wald")
+# check_model(pmlApbRec)
+check_heteroscedasticity(testBandMuscRegion_glm)
+check_collinearity(testBandMuscRegion_glm)
+r2(testBandMuscRegion_glm)
+# report(testBandMuscle)
+
+
+#################################################
+##################### OBSOLETE ##################
+######### same model but random slope ###########
+#################################################
+testBandMuscRegion2 <- lmer(Coh ~
                   # fixed effects
                   NHPTafffected +
                   BBTaffected + 
@@ -334,18 +373,26 @@ testBandMuscRegion <- lmer(Coh ~
                   Muscle + 
                   Band +
                   BrainRegion +
-                  (1 | Subject),
-                  data = filtPML.df
+                  session +
+                  (session | Subject),
+                  data = filtData2.df
                   )
-Anova(testBandMuscRegion, type = 'III')
-model_parameters((testBandMuscRegion))
-# check_model(pmlApbRec)
-check_heteroscedasticity(testBandMuscRegion)
-check_collinearity(testBandMuscRegion)
-r2(testBandMuscRegion)
-# report(testBandMuscle)
 
-testBandMuscRegion_step <- step(testBandMuscRegion)
+Anova(testBandMuscRegion2, type = 'III')
+model_parameters((testBandMuscRegion2))
+# check_model(pmlApbRec)
+check_heteroscedasticity(testBandMuscRegion2)
+check_collinearity(testBandMuscRegion2)
+r2(testBandMuscRegion2)
+
+anova(testBandMuscRegion, testBandMuscRegion2)
+
+#################################################
+#################################################
+#################################################
+
+
+testBandMuscRegion_step <- step(testBandMuscRegion, direction = 'backward')
 finalBandMuscRegModel <- get_model(testBandMuscRegion_step)
 
 Anova(finalBandMuscRegModel, type = 'III')
@@ -353,16 +400,23 @@ model_parameters((finalBandMuscRegModel))
 check_heteroscedasticity(finalBandMuscRegModel)
 check_collinearity(finalBandMuscRegModel)
 r2(finalBandMuscRegModel)
-check_model(finalBandMuscRegModel)
+# x <- check_model(finalBandMuscRegModel)
+
+
+## back elim with random slope
+testBandMuscRegionRand_step <- step(testBandMuscRegion2)
+finalBandMuscRegModel_Rand <- get_model(testBandMuscRegionRand_step)
+
+Anova(finalBandMuscRegModel_Rand, type = 'III')
+model_parameters((finalBandMuscRegModel_Rand))
+check_heteroscedasticity(finalBandMuscRegModel_Rand)
+check_collinearity(finalBandMuscRegModel_Rand)
+r2(finalBandMuscRegModel_Rand)
+
+
+anova(finalBandMuscRegModel,finalBandMuscRegModel_Rand)
 
 ```
-
-
-
-
-
-
-
 
 
 
