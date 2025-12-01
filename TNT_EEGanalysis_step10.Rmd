@@ -13,6 +13,8 @@ library(ggplot2) # for visualization
 library(tidyr) # for data tidying
 library(Hmisc)
 library(lme4)
+library(car)
+library(performance)
 # import CSV file with subject IDs and analyze CMC over time, as well as beta vs gamma, muscle, brain region, etc
 # set working directory to folder with all step9 excel files
 allData.df <- read_csv("/Users/DOB223/Library/CloudStorage/OneDrive-MedicalUniversityofSouthCarolina/Documents/lab/studies/1eeg/TNTanalysis/allDataForAnalyzeTNT.txt")
@@ -319,48 +321,88 @@ check_collinearity(pmlApbRec)
 r2(pmlApbRec)
 
 ```
-Second set of models. PML and motor recovery. same reserach question as above
+Second set of models. PML and motor recovery. Same research question as above, just different
+  modeling strategy
 ```{r}
+# prep dataset
+filtDataGamExe.df <- allData.df %>%
+  group_by(Subject,session,connection) %>%
+  filter(Band == "Gamma",
+         Phase == "Exe") %>%
+  summarise(meanCoh = mean(Coh),
+  .groups = "drop"
+  )
+demogData.df <- allData.df %>% 
+  distinct(Subject, session, age, NHPTafffected, ARATscore, WFMTavgTime, BBTaffected)
+filtDataGamExe.df <- left_join(filtDataGamExe.df, 
+                               demogData.df, 
+                               by=c("Subject","session"))
+
+# output: avg coh data across trials x session and connection with age, NHPT, WMFT, ARAT.. Coh data 
+# within gamma band, execution phase
+
+# filter down what i just created
+tempPMLM1Ldata.df <- filtDataGamExe.df %>%
+  filter(connection %in% c("PML-APB","PML-FDI","M1L-APB","M1-FDI","PML-FDS","PML-EDC","M1L-FDS","M1L-EDC"))
+# model
+modGamExeNHPT <-  lm(meanCoh ~ 
+                      NHPTafffected +
+                      connection +
+                      session,
+                      data = tempPMLM1Ldata.df
+                      )
+Anova(modGamExeNHPT, type = 'III')
+model_parameters(modGamExeNHPT)
+
+```
+
+
+```{}
+
+
+
+
+
 
 filtData2.df <- allData.df %>%
-  group_by(Subject,session) %>%
+  group_by(Subject,session,connection) %>%
   filter(Condition == "NoVib",
          Phase == "Exe",
-         BrainRegion %in% c('PML','M1L','SML','S1L'),
-         ) %>%
-    summarise(meanCoh = mean(Coh), .groups = 'drop')
+         Band == "Beta",
+         connection %in% c("PML-APB","M1L-APB")
+         )
 
-NHPTdistinct <- allData.df %>%
-  distinct(Subject, NHPTafffected, session)
+filtData3.df <- filtData2.df %>%
+  group_by(Subject, session, connection) %>%
+  summarise(meanCoh = mean(Coh))
+  
+filtData3.df <- right_join(filtData3.df, NHPTdistinct, by=c("Subject","session"))
 
-filtData2.df <- left_join(filtData2.df,
-                           NHPTdistinct %>% select(Subject, NHPTafffected),
-                           by = "Subject")
+filtData3_deriv1.df <- filtData3.df %>%
+  filter(session=="Baseline")
 
+```
 
+model
+```{r}
 
-
-testBandMuscRegion_glm <- glm(meanCoh ~
-                  # fixed effects
-                  NHPTafffected +
-                  Band +
-                  Muscle +
-                  BrainRegion +
-                  session,
-                  data = filtData2.df
+testBandMuscRegion_glm <- glm(NHPTafffected ~
+                  meanCoh +
+                  connection,
+                  data = filtData3Test.df
                   )
+
+Anova(testBandMuscRegion_glm, type = 'III')
 
 testBandMuscRegion_lmer <- lmer(Coh ~
                   # fixed effects
                   NHPTafffected +
-                  Band +
-                  Muscle +
-                  BrainRegion +
+                  connection +
                   # random effects 
                   (1 | Subject),
-                  data = filtData2.df
+                  data = filtData1.df
                   )
-
+Anova(testBandMuscRegion_lmer, type = 'III')
 anova(testBandMuscRegion_step,testBandMuscRegion_lmer)
 
 Anova(testBandMuscRegion_glm, type = 'III')
