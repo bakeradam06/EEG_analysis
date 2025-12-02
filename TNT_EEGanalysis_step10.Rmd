@@ -324,14 +324,15 @@ r2(pmlApbRec)
 Second set of models. PML and motor recovery. Same research question as above, just different
   modeling strategy
 ```{r}
-# prep dataset
+# prepare dataset
 filtDataGamExe.df <- allData.df %>%
   group_by(Subject,session,connection) %>%
   filter(Band == "Gamma",
          Phase == "Exe") %>%
-  summarise(meanCoh = mean(Coh),
+  summarise(meanCoh = mean(Coh), # average trials by subject x session x connection together
   .groups = "drop"
   )
+
 demogData.df <- allData.df %>% 
   distinct(Subject, session, age, NHPTafffected, ARATscore, WFMTavgTime, BBTaffected)
 filtDataGamExe.df <- left_join(filtDataGamExe.df, 
@@ -345,229 +346,161 @@ filtDataGamExe.df <- left_join(filtDataGamExe.df,
 tempPMLM1Ldata.df <- filtDataGamExe.df %>%
   #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
   filter(connection %in% c("PML-EDC"),
-         session %in% c("Baseline","Post 1"))
+         session %in% c("Baseline", "Post 1"))
 # model
 modGamExeNHPT <-  glm(NHPTafffected ~ 
-                      meanCoh +
+                      meanCoh + 
                       session,
                       data = tempPMLM1Ldata.df
                       )
 Anova(modGamExeNHPT, type = 'III')
 model_parameters(modGamExeNHPT)
 
-#### plotting
-filtDataGamExe2.df <- filtDataGamExe.df %>%
-  filter(connection %in% c("PML-APB","PML-FDI","PML-FDS","PML-EDC",
-                           "M1L-APB","M1L-FDI","M1L-FDS","M1L-EDC"))
+################################################
+# 9HPT and meanCoh have significant relationship (t(149) = -2.27, p=0.023). 
+# session more significant when NHPT predicting meanCoh (p=0.149) than vice-versa (p=0.783)
+# becomes not significant when session or one of "PML-EDC", "M1L-EDC" is removed. 
+################################################
 
+
+########################
+###### plotting ########
+########################
+filtDataGamExe2.df <- filtDataGamExe.df %>%
+  filter(connection %in% c("PML-FDI","PML-EDC",
+                           "M1L-FDI","M1L-EDC"))
 filtDataGamExe2.df %>%
   filter(session == 'Baseline') %>%
-  ggplot(aes(x=BBTaffected, y=meanCoh)) +
+  ggplot(aes(x=NHPTafffected, y=meanCoh)) +
     geom_point() +
     geom_smooth(method = "lm", se = TRUE) +
     facet_wrap(~connection,ncol=4,nrow=4)
-          
 filtDataGamExe2.df %>%
   filter(connection == 'PML-EDC',
          session == 'Baseline') %>%
   ggplot(aes(x=meanCoh, y=ARATscore)) +
     geom_point() +
     geom_smooth(method = "lm", se = TRUE)
-
-test.df <- filtDataGamExe.df %>%
-  filter(connection == 'M1L-FDS',
-         session == 'Baseline')
-cor(test.df$meanCoh,test.df$BBTaffected)
 ```
 
 
-```{r}
+```{r - second bit of modeling. same research question.}
+# essentially the same analysis above, just in beta band and not gamma
 
 filtData2.df <- allData.df %>%
   group_by(Subject,session,connection) %>%
   filter(Condition == "NoVib",
-         Phase == "Exe",
          Band == "Beta",
-         connection %in% c("PML-APB","M1L-APB")
-         )
-
-filtData3.df <- filtData2.df %>%
+         Phase == "Exe",
+         connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"))
+filtData2.df <- filtData2.df %>%
   group_by(Subject, session, connection) %>%
-  summarise(meanCoh = mean(Coh))
-  
-filtData2.df <- right_join(filtData3.df, 
-                           demogData.df, by=c("Subject","session"))
+  summarise(meanCoh = mean(Coh), # average trials by subject x session x connection together
+            .groups = 'drop')
+filtData2.df <- left_join(filtData2.df, 
+                           demogData.df, by=c("Subject","session")) # join demog data
 
-filtData3_deriv1.df <- filtData3.df %>%
-  filter(session=="Baseline")
+# filter down what i just created
+temp_filtData2.df <- filtData2.df %>%
+  #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
+  filter(connection %in% c("PML-EDC"),
+         session %in% c("Baseline"))
+# model - NHPT
+modGamExeNHPTa <-  glm(NHPTafffected ~ 
+                       meanCoh,
+                       data = temp_filtData2.df
+                       )
+Anova(modGamExeNHPTa, type = 'III')
+model_parameters(modGamExeNHPTa)
+# model - BBT
+modGamExeBBTa <-  glm(BBTaffected ~ 
+                       meanCoh,
+                       data = temp_filtData2.df
+                       )
+Anova(modGamExeBBTa, type = 'III')
+model_parameters(modGamExeBBTa)
+cor(temp_filtData2.df$meanCoh,temp_filtData2.df$NHPTafffected)
+cor(temp_filtData2.df$meanCoh,temp_filtData2.df$BBTaffected)
+
+###### plotting ########
+temp_filtData2.df %>%
+  filter(session == 'Baseline') %>%
+  ggplot(aes(x=NHPTafffected, y=meanCoh)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE)# +
+    #facet_wrap(~connection,ncol=4,nrow=4)
+temp_filtData2.df %>%
+  filter(connection == 'PML-EDC',
+         session == 'Baseline') %>%
+  ggplot(aes(x=meanCoh, y=ARATscore)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE)
+
+```
+model 
+```{r}
+
+filtData3.df <- allData.df %>%
+  group_by(Subject,session,connection) %>%
+  filter(Condition == "NoVib",
+         Band == "Beta",
+         Phase == "Prep",
+         connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"))
+filtData3.df <- filtData3.df %>%
+  group_by(Subject, session, connection) %>%
+  summarise(meanCoh = mean(Coh), # average trials by subject x session x connection together
+            .groups = 'drop')
+filtData3.df <- left_join(filtData3.df, 
+                           demogData.df, by=c("Subject","session")) # join demog data
+
+# filter down what i just created
+temp_filtData3.df <- filtData3.df %>%
+  #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
+  filter(connection %in% c("PML-EDC"),
+         session %in% c("Baseline"))
+# model - NHPT
+modGamExeNHPTb <-  glm(NHPTafffected ~ 
+                       meanCoh,
+                       data = temp_filtData3.df
+                       )
+Anova(modGamExeNHPTb, type = 'III')
+model_parameters(modGamExeNHPTb)
+
+# model - BBT
+modGamExeBBTb <-  glm(BBTaffected ~ 
+                       meanCoh,
+                       data = temp_filtData3.df
+                       )
+Anova(modGamExeBBTb, type = 'III')
+model_parameters(modGamExeBBTa)
+cor(temp_filtData3.df$meanCoh,temp_filtData2.df$NHPTafffected)
+cor(temp_filtData3.df$meanCoh,temp_filtData2.df$BBTaffected)
+
+###### plotting ########
+temp_filtData3.df %>%
+  filter(session == 'Baseline') %>%
+  ggplot(aes(x=NHPTafffected, y=meanCoh)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE)# +
+    #facet_wrap(~connection,ncol=4,nrow=4)
+temp_filtData3.df %>%
+  filter(connection == 'PML-EDC',
+         session == 'Baseline') %>%
+  ggplot(aes(x=meanCoh, y=ARATscore)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE)
 
 ```
 
-model
 ```{r}
-
-testBandMuscRegion_glm <- glm(NHPTafffected ~
-                  meanCoh +
-                  connection,
-                  data = filtData3Test.df
-                  )
-
-Anova(testBandMuscRegion_glm, type = 'III')
-
-testBandMuscRegion_lmer <- lmer(Coh ~
-                  # fixed effects
-                  NHPTafffected +
-                  connection +
-                  # random effects 
-                  (1 | Subject),
-                  data = filtData1.df
-                  )
-Anova(testBandMuscRegion_lmer, type = 'III')
-anova(testBandMuscRegion_step,testBandMuscRegion_lmer)
-
-Anova(testBandMuscRegion_glm, type = 'III')
-# Anova(testBandMuscRegion_lmer, type = 'III')
-anova(testBandMuscRegion_glm)
-summary(testBandMuscRegion_glm)
-model_parameters(testBandMuscRegion_glm, ci_method = "wald")
-# model_parameters(testBandMuscRegion_lmer, ci_method = "wald")
-# check_model(pmlApbRec)
-check_heteroscedasticity(testBandMuscRegion_glm)
-check_collinearity(testBandMuscRegion_glm)
-r2(testBandMuscRegion_glm)
-# report(testBandMuscle)
-
-
-#################################################
-##################### OBSOLETE ##################
-######### same model but random slope ###########
-#################################################
-testBandMuscRegion2 <- lmer(Coh ~
-                  # fixed effects
-                  NHPTafffected +
-                  BBTaffected + 
-                  ARATscore +
-                  Muscle + 
-                  Band +
-                  BrainRegion +
-                  session +
-                  (session | Subject),
-                  data = filtData2.df
-                  )
-
-Anova(testBandMuscRegion2, type = 'III')
-model_parameters((testBandMuscRegion2))
-# check_model(pmlApbRec)
-check_heteroscedasticity(testBandMuscRegion2)
-check_collinearity(testBandMuscRegion2)
-r2(testBandMuscRegion2)
-
-anova(testBandMuscRegion, testBandMuscRegion2)
-
-#################################################
-#################################################
-#################################################
-
-
-testBandMuscRegion_step <- step(testBandMuscRegion, direction = 'backward')
-finalBandMuscRegModel <- get_model(testBandMuscRegion_step)
-
-Anova(finalBandMuscRegModel, type = 'III')
-model_parameters((finalBandMuscRegModel))
-check_heteroscedasticity(finalBandMuscRegModel)
-check_collinearity(finalBandMuscRegModel)
-r2(finalBandMuscRegModel)
-# x <- check_model(finalBandMuscRegModel)
-
-
-## back elim with random slope
-testBandMuscRegionRand_step <- step(testBandMuscRegion2)
-finalBandMuscRegModel_Rand <- get_model(testBandMuscRegionRand_step)
-
-Anova(finalBandMuscRegModel_Rand, type = 'III')
-model_parameters((finalBandMuscRegModel_Rand))
-check_heteroscedasticity(finalBandMuscRegModel_Rand)
-check_collinearity(finalBandMuscRegModel_Rand)
-r2(finalBandMuscRegModel_Rand)
-
-
-anova(finalBandMuscRegModel,finalBandMuscRegModel_Rand)
-
 ```
 
 
-
-Second model, post-hoc: does M1L-APB in gamma during grip associate with motor reocvery?
 ```{r}
-
-filt_m1lApbARAT.df <- allData.df %>%
-  filter(connection == "M1L-EDC", 
-         Band == "Beta", 
-         Condition == "NoVib",
-         Phase == "Exe")
-
-m1lApbRec <- lmer(ARATscore ~
-                  # fixed effects
-                  Coh*session +
-                  (1 | Subject),
-                  data = filt_m1lApbARAT.df
-                  )
-Anova(m1lApbRec,type = 'III')
-model_parameters((m1lApbRec))
-check_model(m1lApbRec)
-check_heteroscedasticity(m1lApbRec)
-check_collinearity(m1lApbRec)
-
 ```
-aggregate data, model according to subject-level CMC data instead of trial-level
+
+
 ```{r}
-
-# create subject level cmc data
-groupDataLong.df <- allData.df %>%
-  group_by(Subject, session, connection, Band, Phase, Condition) %>%
-  summarise(
-    meanCoh = mean(Coh),
-    ARATscore = first(ARATscore),
-    typeStroke = first(typeStroke),
-    timeSinceStrokeMonth = first(timeSinceStrokeMonth),
-    age = first(age),
-    group = first(group), 
-    baseARAT = ARATscore["Baseline"],
-    .groups = "drop"
-  )
-# create baseline ARAT score var, then add new new df above
-baseARAT <- allData.df %>%
-  group_by(Subject) %>%
-  filter(session == "Baseline") %>%
-  summarise(baseARATscore = first(ARATscore),
-            .groups = "drop")
-groupDataLong.df <- right_join(groupDataLong.df, baseARAT, by='Subject')
-# now have subject level cmc data according to condition and all the other stuff
-
-
-
-##### reassess pml-apb association with motor recovery now with group level cmc data..
-pmlApbRec2.df <- groupDataLong.df %>%
-  filter(Condition == "NoVib", Band == "Gamma", Phase == "Prep", connection == "PML-APB")
-
-pmlApbRec2 <- lmer(ARATscore ~
-              # fixed effects
-              meanCoh*session + 
-              baseARATscore +  
-              group +
-              # random effects 
-              (1 | Subject),
-              data = pmlApbRec2.df
-              )
-Anova(pmlApbRec2, type = 'III')
-model_parameters((pmlApbRec2))
-check_model(pmlApbRec2)
-check_heteroscedasticity(pmlApbRec2)
-check_collinearity(pmlApbRec2)
-r2(pmlApbRec2)
-
-# nothing significant here. No evidence that PML-APB in gamma during grip prep associates with recovery.
-
 ```
 Post-hoc - look for associations in M1L-muscle in gamma during exe
 ```{r}
@@ -590,16 +523,5 @@ r2(m1lTest2)
 
 ```
 
-
-```{r}
-```
-
-
-```{r}
-```
-
-
-```{r}
-```
 
  
