@@ -437,8 +437,8 @@ temp_filtData2.df %>%
     geom_smooth(method = "lm", se = TRUE)
 
 ```
-model 
-```{r}
+take 3 modeling - see below for notes. same research question, just comparing between bands/phases
+```{r - same modeling, but beta prep}
 
 filtData3.df <- allData.df %>%
   group_by(Subject,session,connection) %>%
@@ -455,44 +455,95 @@ filtData3.df <- left_join(filtData3.df,
 
 # filter down what i just created
 temp_filtData3.df <- filtData3.df %>%
-  #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
-  filter(connection %in% c("PML-EDC"),
+  filter(connection %in% c("PML-FDI"),
+  #filter(connection %in% c("PML-FDI"),
          session %in% c("Baseline"))
 # model - NHPT
-modGamExeNHPTb <-  glm(NHPTafffected ~ 
+modGamExeNHPTb <-  glm(BBTaffected ~ 
                        meanCoh,
                        data = temp_filtData3.df
                        )
 Anova(modGamExeNHPTb, type = 'III')
 model_parameters(modGamExeNHPTb)
-
+cor(temp_filtData3.df$meanCoh,temp_filtData3.df$BBTaffected)
 # model - BBT
-modGamExeBBTb <-  glm(BBTaffected ~ 
+modGamExeBBTb <-  glm(ARATscore ~ 
                        meanCoh,
                        data = temp_filtData3.df
                        )
 Anova(modGamExeBBTb, type = 'III')
-model_parameters(modGamExeBBTa)
-cor(temp_filtData3.df$meanCoh,temp_filtData2.df$NHPTafffected)
-cor(temp_filtData3.df$meanCoh,temp_filtData2.df$BBTaffected)
+model_parameters(modGamExeBBTb)
+cor(temp_filtData3.df$meanCoh,temp_filtData3.df$ARATscore)
+
 
 ###### plotting ########
 temp_filtData3.df %>%
   filter(session == 'Baseline') %>%
-  ggplot(aes(x=NHPTafffected, y=meanCoh)) +
+  ggplot(aes(x=meanCoh, y=BBTaffected)) +
     geom_point() +
-    geom_smooth(method = "lm", se = TRUE)# +
-    #facet_wrap(~connection,ncol=4,nrow=4)
+    geom_smooth(method = "lm", se = TRUE) +
+    facet_wrap(~connection,ncol=4,nrow=4)
 temp_filtData3.df %>%
-  filter(connection == 'PML-EDC',
+  filter(connection == 'PML-FDI',
          session == 'Baseline') %>%
   ggplot(aes(x=meanCoh, y=ARATscore)) +
     geom_point() +
     geom_smooth(method = "lm", se = TRUE)
 
+
 ```
 
-```{r}
+```{r - same as above}
+filtData4.df <- allData.df %>%
+  group_by(Subject,session,connection) %>%
+  filter(Condition == "NoVib",
+         Band == "Gamma",
+         Phase == "Prep",
+         connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"))
+filtData4.df <- filtData4.df %>%
+  group_by(Subject, session, connection) %>%
+  summarise(meanCoh = mean(Coh), # average trials by subject x session x connection together
+            .groups = 'drop')
+filtData4.df <- left_join(filtData4.df, 
+                           demogData.df, by=c("Subject","session")) # join demog data
+
+# filter down what i just created
+temp_filtData4.df <- filtData4.df %>%
+  filter(connection %in% c("PML-FDI"),
+  #filter(connection %in% c("PML-FDI"),
+         session %in% c("Baseline"))
+# model - NHPT
+modGamExeNHPTc <-  glm(BBTaffected ~ 
+                       meanCoh,
+                       data = temp_filtData4.df
+                       )
+Anova(modGamExeNHPTb, type = 'III')
+model_parameters(modGamExeNHPTb)
+cor(temp_filtData3.df$meanCoh,temp_filtData3.df$BBTaffected)
+# model - BBT
+modGamExeBBTc <-  glm(ARATscore ~ 
+                       meanCoh,
+                       data = temp_filtData4.df
+                       )
+Anova(modGamExeBBTb, type = 'III')
+model_parameters(modGamExeBBTb)
+cor(temp_filtData3.df$meanCoh,temp_filtData3.df$ARATscore)
+
+
+###### plotting ########
+temp_filtData3.df %>%
+  filter(session == 'Baseline') %>%
+  ggplot(aes(x=meanCoh, y=BBTaffected)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE) +
+    facet_wrap(~connection,ncol=4,nrow=4)
+temp_filtData3.df %>%
+  filter(connection == 'PML-FDI',
+         session == 'Baseline') %>%
+  ggplot(aes(x=meanCoh, y=ARATscore)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE)
+
 ```
 
 
