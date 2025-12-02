@@ -343,32 +343,45 @@ filtDataGamExe.df <- left_join(filtDataGamExe.df,
 
 # filter down what i just created
 tempPMLM1Ldata.df <- filtDataGamExe.df %>%
-  filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
+  #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
+  filter(connection %in% c("PML-EDC"),
          session %in% c("Baseline","Post 1"))
 # model
-modGamExeNHPT <-  lm(meanCoh ~ 
-                      NHPTafffected +
-                      session +
-                      connection,
+modGamExeNHPT <-  glm(NHPTafffected ~ 
+                      meanCoh +
+                      session,
                       data = tempPMLM1Ldata.df
                       )
 Anova(modGamExeNHPT, type = 'III')
 model_parameters(modGamExeNHPT)
+
 #### plotting
+filtDataGamExe2.df <- filtDataGamExe.df %>%
+  filter(connection %in% c("PML-APB","PML-FDI","PML-FDS","PML-EDC",
+                           "M1L-APB","M1L-FDI","M1L-FDS","M1L-EDC"))
 
+filtDataGamExe2.df %>%
+  filter(session == 'Baseline') %>%
+  ggplot(aes(x=BBTaffected, y=meanCoh)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE) +
+    facet_wrap(~connection,ncol=4,nrow=4)
+          
+filtDataGamExe2.df %>%
+  filter(connection == 'PML-EDC',
+         session == 'Baseline') %>%
+  ggplot(aes(x=meanCoh, y=ARATscore)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE)
 
-
-
-
+test.df <- filtDataGamExe.df %>%
+  filter(connection == 'M1L-FDS',
+         session == 'Baseline')
+cor(test.df$meanCoh,test.df$BBTaffected)
 ```
 
 
-```{}
-
-
-
-
-
+```{r}
 
 filtData2.df <- allData.df %>%
   group_by(Subject,session,connection) %>%
@@ -382,7 +395,8 @@ filtData3.df <- filtData2.df %>%
   group_by(Subject, session, connection) %>%
   summarise(meanCoh = mean(Coh))
   
-filtData3.df <- right_join(filtData3.df, NHPTdistinct, by=c("Subject","session"))
+filtData2.df <- right_join(filtData3.df, 
+                           demogData.df, by=c("Subject","session"))
 
 filtData3_deriv1.df <- filtData3.df %>%
   filter(session=="Baseline")
