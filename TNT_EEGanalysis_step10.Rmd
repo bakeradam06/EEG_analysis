@@ -343,16 +343,22 @@ filtDataGamExe.df <- left_join(filtDataGamExe.df,
 
 # filter down what i just created
 tempPMLM1Ldata.df <- filtDataGamExe.df %>%
-  filter(connection %in% c("PML-APB","PML-FDI","M1L-APB","M1-FDI","PML-FDS","PML-EDC","M1L-FDS","M1L-EDC"))
+  filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
+         session %in% c("Baseline","Post 1"))
 # model
 modGamExeNHPT <-  lm(meanCoh ~ 
                       NHPTafffected +
-                      connection +
-                      session,
+                      session +
+                      connection,
                       data = tempPMLM1Ldata.df
                       )
 Anova(modGamExeNHPT, type = 'III')
 model_parameters(modGamExeNHPT)
+#### plotting
+
+
+
+
 
 ```
 
