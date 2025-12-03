@@ -346,11 +346,10 @@ filtDataGamExe.df <- left_join(filtDataGamExe.df,
 tempPMLM1Ldata.df <- filtDataGamExe.df %>%
   #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
   filter(connection %in% c("PML-EDC"),
-         session %in% c("Baseline", "Post 1"))
+         session %in% c("Baseline"))
 # model
 modGamExeNHPT <-  glm(NHPTafffected ~ 
-                      meanCoh + 
-                      session,
+                      meanCoh,
                       data = tempPMLM1Ldata.df
                       )
 Anova(modGamExeNHPT, type = 'III')
@@ -403,22 +402,22 @@ filtData2.df <- left_join(filtData2.df,
 # filter down what i just created
 temp_filtData2.df <- filtData2.df %>%
   #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
-  filter(connection %in% c("PML-EDC"),
+  filter(connection %in% c("PML-EDC"), # exchange for what is listed in list immediately above
          session %in% c("Baseline"))
-# model - NHPT
+# model - NHPT 
 modGamExeNHPTa <-  glm(NHPTafffected ~ 
-                       meanCoh,
+                       meanCoh, 
                        data = temp_filtData2.df
                        )
 Anova(modGamExeNHPTa, type = 'III')
-model_parameters(modGamExeNHPTa)
+model_parameters(modGamExeNHPTa) # "PML-EDC": p<0.001; "PML-FDI": p=0.653, "M1L-FDI": p=0.799; M1L-EDC: p=0.002
 # model - BBT
 modGamExeBBTa <-  glm(BBTaffected ~ 
                        meanCoh,
                        data = temp_filtData2.df
                        )
 Anova(modGamExeBBTa, type = 'III')
-model_parameters(modGamExeBBTa)
+model_parameters(modGamExeBBTa) # "PML-EDC": p=0.004; "PML-FDI": p=0.169, "M1L-FDI": p=0.190; M1L-EDC: p=0.235
 cor(temp_filtData2.df$meanCoh,temp_filtData2.df$NHPTafffected)
 cor(temp_filtData2.df$meanCoh,temp_filtData2.df$BBTaffected)
 
@@ -430,11 +429,12 @@ temp_filtData2.df %>%
     geom_smooth(method = "lm", se = TRUE)# +
     #facet_wrap(~connection,ncol=4,nrow=4)
 temp_filtData2.df %>%
-  filter(connection == 'PML-EDC',
+  filter(#connection == 'PML-EDC',
          session == 'Baseline') %>%
   ggplot(aes(x=meanCoh, y=ARATscore)) +
     geom_point() +
     geom_smooth(method = "lm", se = TRUE)
+
 
 ```
 take 3 modeling - see below for notes. same research question, just comparing between bands/phases
@@ -490,7 +490,7 @@ temp_filtData3.df %>%
     geom_point() +
     geom_smooth(method = "lm", se = TRUE)
 
-
+# nothing significant here at time of writing - 12/2/2025.
 ```
 
 ```{r - same as above}
@@ -517,32 +517,120 @@ modGamExeNHPTc <-  glm(BBTaffected ~
                        meanCoh,
                        data = temp_filtData4.df
                        )
-Anova(modGamExeNHPTb, type = 'III')
-model_parameters(modGamExeNHPTb)
-cor(temp_filtData3.df$meanCoh,temp_filtData3.df$BBTaffected)
+Anova(modGamExeNHPTc, type = 'III')
+model_parameters(modGamExeNHPTc)
+cor(temp_filtData4.df$meanCoh,temp_filtData4.df$BBTaffected)
 # model - BBT
 modGamExeBBTc <-  glm(ARATscore ~ 
                        meanCoh,
                        data = temp_filtData4.df
                        )
-Anova(modGamExeBBTb, type = 'III')
-model_parameters(modGamExeBBTb)
-cor(temp_filtData3.df$meanCoh,temp_filtData3.df$ARATscore)
-
+Anova(modGamExeBBTc, type = 'III')
+model_parameters(modGamExeBBTc)
+cor(temp_filtData4.df$meanCoh,temp_filtData4.df$ARATscore)
 
 ###### plotting ########
-temp_filtData3.df %>%
+temp_filtData4.df %>%
   filter(session == 'Baseline') %>%
   ggplot(aes(x=meanCoh, y=BBTaffected)) +
     geom_point() +
     geom_smooth(method = "lm", se = TRUE) +
-    facet_wrap(~connection,ncol=4,nrow=4)
-temp_filtData3.df %>%
-  filter(connection == 'PML-FDI',
-         session == 'Baseline') %>%
+    facet_wrap(~connection,ncol=2,nrow=2)
+temp_filtData4.df %>%
+  filter(session == 'Baseline') %>%
   ggplot(aes(x=meanCoh, y=ARATscore)) +
     geom_point() +
     geom_smooth(method = "lm", se = TRUE)
+    facet_wrap(~connection,ncol=2,nrow=2)
+
+    
+# nothing significant here at time of writing - 12/2/2025.
+```
+
+
+
+
+
+
+Now moving onto assessing effects of time. All previous modeling was at baseline.
+```{r - Investigate time with PML-EDC connection in beta during exe}
+
+filtData21a.df <- allData.df %>%
+  group_by(Subject,session,connection) %>%
+  filter(Condition == "NoVib",
+         Band == "Beta",
+         Phase == "Exe",
+         connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"))
+filtData21a.df <- filtData21a.df %>%
+  group_by(Subject, session, connection) %>%
+  summarise(meanCoh = mean(Coh), # average trials by subject x session x connection together
+            .groups = 'drop')
+filtData211.df <- filtData21a.df %>%
+  pivot_wider(
+    names_from = connection, 
+    values_from = meanCoh) # pivot to wide take 1 for calculating change scores
+
+filtData211.df <- filtData211.df %>%
+  pivot_wider(
+    names_from = session, 
+    values_from = c(`M1L-EDC`, `M1L-FDI`, `PML-EDC`, `PML-FDI`)) # pivot to wide take 1 for calculating change scores
+    
+filtData211.df <- left_join(filtData21a.df, 
+                           demogData.df, by=c("Subject","session")) # join demog data
+# compute change scores
+# post-pre
+filtData211.df <- filtData211.df %>%
+  mutate(across(
+    ends_with("Post 1"),
+    ~ . - get(sub("Post 1$", "Baseline", cur_column())),
+    .names = "{sub('Post 1$', 'change_PrePost', .col)}"
+  ))
+# fu-pre
+filtData211.df <- filtData211.df %>%
+  mutate(across(
+    ends_with("FU 1"),
+    ~ . - get(sub("FU 1$", "Baseline", cur_column())),
+    .names = "{sub('FU 1$', 'change_PreFU', .col)}"
+  ))
+
+
+# filter down what i just created
+temp_filtData211.df <- filtData211.df %>%
+  #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
+  filter(connection %in% c("PML-EDC"),
+         session %in% c("Baseline", "Post 1"))
+# model - NHPT
+modGamExeNHPTa1 <-  glm(NHPTafffected ~ 
+                       meanCoh +
+                       session,
+                       data = temp_filtData21.df
+                       )
+Anova(modGamExeNHPTa1, type = 'III')
+model_parameters(modGamExeNHPTa1)
+# model - BBT
+modGamExeBBTa1 <-  glm(BBTaffected ~ 
+                       meanCoh + 
+                       session,
+                       data = temp_filtData21.df
+                       )
+Anova(modGamExeBBTa1, type = 'III')
+model_parameters(modGamExeBBTa1)
+
+###### plotting ########
+temp_filtData2.df %>%
+#  filter(session == 'Baseline') %>%
+  ggplot(aes(x=NHPTafffected, y=meanCoh)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE)
+cor(temp_filtData21.df$meanCoh,temp_filtData21.df$NHPTafffected)
+
+temp_filtData2.df %>%
+  #filter(#connection == 'PML-EDC',
+   #      session == 'Baseline') %>%
+  ggplot(aes(x=meanCoh, y=ARATscore)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = TRUE)
+cor(temp_filtData21.df$meanCoh,temp_filtData21.df$ARATscore)
 
 ```
 
@@ -551,28 +639,9 @@ temp_filtData3.df %>%
 ```
 
 
-```{r}
-```
-Post-hoc - look for associations in M1L-muscle in gamma during exe
-```{r}
-m1lTest2.df <- groupDataLong.df %>%
-  filter(Band == "Gamma", Phase == "Exe", connection == "M1L-EDC")
-  
-m1lTest2 <- lmer(ARATscore ~
-                    # fixed effects
-                    meanCoh*session + 
-                    # random effects 
-                    (1 | Subject),
-                    data = m1lTest2.df
-                    )
-Anova(m1lTest2, type = 'III')
-model_parameters((m1lTest2))
-check_model(m1lTest2)
-check_heteroscedasticity(m1lTest2)
-check_collinearity(m1lTest2)
-r2(m1lTest2)          
-
-```
 
 
- 
+
+
+
+
