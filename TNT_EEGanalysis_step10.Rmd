@@ -329,7 +329,7 @@ filtDataGamExe2.df %>%
 filtData2.df <- allData.df %>%
   group_by(Subject,session,connection) %>%
   filter(Condition == "NoVib",
-         Band == "Beta",
+         Band == "Beta", # change to beta if desired
          Phase == "Exe",
          connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"))
 filtData2.df <- filtData2.df %>%
@@ -342,24 +342,48 @@ filtData2.df <- left_join(filtData2.df,
 # filter down what i just created
 temp_filtData2.df <- filtData2.df %>%
   #filter(connection %in% c("PML-FDI","PML-EDC","M1L-FDI","M1L-EDC"),
-  filter(connection %in% c("M1L-EDC"), # For ASNR 2026 abstract poster, change between "M1L-EDC" and "PML-EDC", then run two models below.
+  filter(connection %in% c("PML-EDC"), # For ASNR 2026 abstract poster, change between "M1L-EDC" and "PML-EDC", then run two models below.
          session %in% c("Baseline"))
 # model - NHPT 
-modGamExeNHPTa <-  lm(NHPTafffected ~ 
+modGamExeNHPTa <-  glm(NHPTafffected ~ 
                        meanCoh, 
                        data = temp_filtData2.df
                        )
 Anova(modGamExeNHPTa, type = 'III')
-model_parameters(modGamExeNHPTa) # "PML-EDC": p<0.001; "PML-FDI": p=0.653, "M1L-FDI": p=0.799; M1L-EDC: p=0.002
+summary(modGamExeNHPTa)
+model_parameters(modGamExeNHPTa) # BETA: "PML-EDC": p<0.001; "PML-FDI": p=0.653, "M1L-FDI": p=0.799; M1L-EDC: p=0.002
+check_heteroscedasticity(modGamExeNHPTa)
+check_residuals(modGamExeNHPTa)
+report(modGamExeNHPTa)
+
+gam1 <- gam(data = temp_filtData2.df,
+            formula = NHPTafffected ~ s(meanCoh))
+summary(gam1)
+model_parameters(gam1)
+check_model(gam1)
+plot.Gam(gam1, se=T)
+
+spearman_result <- cor.test(temp_filtData2.df$NHPTafffected, temp_filtData2.df$meanCoh, 
+                            method = "spearman", data=temp_filtData2.df)
+spearman_result$statistic
+spearman_result$p.value
+spearman_result$estimate
+
 # model - BBT
-modGamExeBBTa <-  lm(BBTaffected ~ 
+modGamExeBBTa <-  glm(BBTaffected ~ 
                        meanCoh,
                        data = temp_filtData2.df
                        )
+
 Anova(modGamExeBBTa, type = 'III')
+summary(modGamExeBBTa)
 model_parameters(modGamExeBBTa) # "PML-EDC": p=0.004; "PML-FDI": p=0.169, "M1L-FDI": p=0.190; M1L-EDC: p=0.235
+report(modGamExeBBTa)
+check_heteroscedasticity(modGamExeBBTa)
+check_residuals(modGamExeBBTa)
 cor(temp_filtData2.df$meanCoh,temp_filtData2.df$NHPTafffected)
 cor(temp_filtData2.df$meanCoh,temp_filtData2.df$BBTaffected)
+
 
 ###### plotting ########
 temp_filtData2.df %>%
@@ -371,10 +395,9 @@ temp_filtData2.df %>%
 temp_filtData2.df %>%
   filter(#connection == 'PML-EDC',
          session == 'Baseline') %>%
-  ggplot(aes(x=meanCoh, y=ARATscore)) +
+  ggplot(aes(x=meanCoh, y=BBTaffected)) +
     geom_point() +
     geom_smooth(method = "lm", se = TRUE)
-
 
 ```
 take 3 modeling - see below for notes. same research question, just comparing between bands/phases
