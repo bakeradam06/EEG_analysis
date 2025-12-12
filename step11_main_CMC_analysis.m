@@ -47,30 +47,11 @@ clear i tempTable tables
 %% begin plotting
 summry2.session = categorical(summry2.session);
 
-% plot over time, two diffrent plots (subplot) separated by freq band. 
-subset = summry2(string(summry2.Phase) == "Exe",:);
-
-figure
-
 %%
 groups = findgroups(summry2.BrainRegion, summry2.Muscle);
 splitapply(@(x) plot(x), summry2.mean_Coh, groups) 
 
+%% first models
 
-
-
-
-
-
-%% first lme model
-
-% generate subsample of data
-heightA = height(allData);
-subsetIdx = logical(randi([0,1],heightA,1));
-
-allData_subset = allData(subsetIdx,:);
-
-
-%%
-form = fitlme(allData, "WFMTavgTime ~ Coh + session + (Subject | session)");
-lme = fitlme(allData, form)
+modl1 = fitlm(allData,"NHPTafffected~Coh+Band+BrainRegion");
+disp(modl1)
