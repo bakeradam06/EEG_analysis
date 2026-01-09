@@ -3,7 +3,7 @@
 # EEG analysis
 
 ################################################################################
-####### CMC analysis, potenitally for dissertation, conference abstract ########
+####### CMC analysis, potentially for dissertation, conference abstract ########
 ################################################################################
 
 ## load libraries
